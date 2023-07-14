@@ -79,11 +79,8 @@ ui <- fluidPage(
                         choices = lista_temas)
           ),
           # Año de interés
-          div(
-            selectInput(inputId = "id_anio",
-                        label = "Año de consulta",
-                        choices = anio_consulta)
-          ),
+          uiOutput(outputId = "id_anio"),
+          # Subtema
           uiOutput(outputId = "subtemaInputUI"),
           # Indicadores
           uiOutput(outputId = "indicadorInputUI")
@@ -150,7 +147,9 @@ server <- function(input, output, session) {
   })
   ###
   
-  ### Muestra la lista de subtemas cuando selecciona Aspectos cualitativos de vulnerabilidad
+  ### Muestra la lista de subtemas cuando selecciona 
+  # Aspectos cualitativos de vulnerabilidad y esconde el elemento 
+  # para escoger año
   output$subtemaInputUI <- renderUI({
     if (input$id_tema == 10) {
       query_subtemas <- "SELECT * FROM catalogo.des_soc_subtema;"
@@ -161,10 +160,29 @@ server <- function(input, output, session) {
                   choices = lista_subtemas$subtema)
     }
   })
+  
+  # Muestra la casilla año si el tema es distinto a Aspectos cualitativos de vul.
+  # Este tema solo tiene datos para el 2020, por lo que no tiene caso mostrar la casilla
+  observeEvent(input$id_tema, ignoreNULL = FALSE, {
+    if (input$id_tema == 10){
+      output$id_anio <- renderUI(NULL)
+    } else {
+      output$id_anio <- renderUI(
+        selectInput(
+          inputId = 'id_anio',
+          label = 'Año',
+          selected = '',
+          choices = list("2010" = 2010, "2020" = 2020)
+        )
+      )
+    }
+  })
   ###
   
   ### Inicio evento para selecciones los indicadores de índice y nivel
   output$indicadorInputUI <- renderUI({
+    req(input$id_tema, input$id_anio)
+    
     id_tema <- input$id_tema
     anio <- input$id_anio
     query_indicadores <- paste0("SELECT * FROM catalogo.indicadores
