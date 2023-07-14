@@ -13,15 +13,18 @@ conexion <- ipa::db_connect(dbname = "siclr_db",
                             host = "database")
 
 ### Define las variables de entrada para las listas desplegables
+# Tipo de consulta
 tipo_consulta <- list("Selecciona una opción de consulta" = "null",
                       "Localidades" = "id_loc",
                       "Propiedad social" = "id_ps",
                       "Propiedad privada" = "id_pp",
                       "Municipio" = "id_mun")
+# Estados de Pacífico Sur
 estados <- list("Selecciona un estado" = 0,
                 "Chiapas" = 7,
                 "Guerrero" = 12,
                 "Oaxaca" = 20)
+# Temas que el usuario puede escoger
 lista_temas <- list("Carencia de bienes y medios de comunicación" = 2,
                     "Exclusión indígena" = 3,
                     "Incidencia de analfabetismo" = 7,
@@ -31,6 +34,7 @@ lista_temas <- list("Carencia de bienes y medios de comunicación" = 2,
                     "Presencia de población infantil y en edad dependiente" = 6,
                     "Rezago educativo, carencia de auto e internet" = 4,
                     "Aspectos cualitativos de vulnerabilidad" = 10)
+# Año de consulta
 anio_consulta <- list("2010" = 2010,
                       "2020" = 2020)
 ###
