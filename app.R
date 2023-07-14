@@ -79,10 +79,11 @@ ui <- fluidPage(
         
         # Muestra la tabla de datos o la infografía
         mainPanel(
-          tableOutput("data_table"),
+          tableOutput(outputId = "data_table"),
           
           # Botón para descargar los datos
-          downloadButton("id_descargar", "Descargar datos")
+          downloadButton(outputId = "id_descargar",
+                         label = "Descargar datos")
           )
     )
 )
@@ -251,12 +252,19 @@ server <- function(input, output, session) {
       filter(id %in% indicadores_seleccionados()) |>
       pull(cve_ind) |>
       toupper()
+    
+    # Separa las claves de indicadores con comas y las pone entre comillas para 
+    # usarlas de manera fácil en el query
+    clave_indicadores <- paste(dQuote(clave_indicador, FALSE), collapse=",")
+    
+    # Selecciona la tabla de datos de interés según el año seleccionado
+    tabla_localidades_bd <- paste0("loc_rur_", input$id_anio)
+    
     # Extrae los indicadores según el estado, municipio, localidad, tema, 
     # subtema (se es el caso), año e indicadores seleccionados
-    out <- paste(dQuote(clave_indicador, FALSE), collapse=",")
-    
-    query_indicadores <- paste0("SELECT ", out,
-                                " FROM ivp.loc_rur_2010 LIMIT 10;")
+    query_indicadores <- paste0("SELECT ", clave_indicadores,
+                                " FROM ivp.", tabla_localidades_bd,
+                                " LIMIT 10;")
     indi <- ipa::db_get_table(conn = conexion,
                               statement = query_indicadores)
   })
