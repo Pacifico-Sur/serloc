@@ -68,7 +68,8 @@ ui <- fluidPage(
           div(
             selectInput(inputId = "id_localidades",
                         label = "Localidad",
-                        choices = NULL)
+                        choices = NULL,
+                        multiple = TRUE)
           ),
           # Temas de interés
           div(
@@ -81,6 +82,7 @@ ui <- fluidPage(
           # Subtema
           uiOutput(outputId = "subtemaInputUI"),
           # Indicadores
+          checkboxInput('bar', 'All/None'),
           uiOutput(outputId = "indicadorInputUI"),
           # Botón para visualizar datos
           actionButton("id_visualizar", "Ver tabla de datos")
@@ -88,7 +90,10 @@ ui <- fluidPage(
         
         # Muestra la tabla de datos o la infografía
         mainPanel(
-          tableOutput("data_table")
+          tableOutput("data_table"),
+          
+          # Botón para descargar los datos
+          downloadButton("id_descargar", "Descargar datos")
           )
     )
 )
@@ -122,7 +127,7 @@ server <- function(input, output, session) {
   })
   ###
   
-  ### Evento para llenar la lista de localidades según el municipio seleccionado
+  ### Inicio evento para llenar la lista de localidades según el municipio seleccionado
   observe({
     req(input$id_municipio)
     id_mun <- input$id_municipio
@@ -208,6 +213,7 @@ server <- function(input, output, session) {
     lista_indicadores <- setNames(
       as.list(lista_indicadores$id), lista_indicadores$indicadores)
     
+    
     checkboxGroupInput(inputId = "id_indicadores", 
                          label = "Indicadores",
                          choices = lista_indicadores,
@@ -218,11 +224,11 @@ server <- function(input, output, session) {
   
   indicadores_seleccionados <- reactive({
     req(input$id_indicadores)
-    df_indicadores <- c(input$id_indicadores)
+    df_indicadores <- input$id_indicadores
     })
   
   ### Inicio botón de visualización de datos
-  observe({
+  df_localidades_indicadores <- reactive({
     req(input$id_visualizar, input$id_tema, input$id_anio)
     
     id_tema <- input$id_tema
@@ -231,18 +237,37 @@ server <- function(input, output, session) {
     # Extraigo la clave del indicador (cve_ind) de df_indicadores según el
     # id del indicador seleccionado
     clave_indicador <- df_indicadores() |>
-      filter(id == indicadores_seleccionados()) |>
+      filter(id %in% indicadores_seleccionados()) |>
       pull(cve_ind) |>
       toupper()
     # Extrae los indicadores según el estado, municipio, localidad, tema, 
     # subtema (se es el caso), año e indicadores seleccionados
-    query_indicadores <- paste0("SELECT ", "\"", clave_indicador, "\"",
+    out <- paste(dQuote(clave_indicador, FALSE), collapse=",")
+    
+    query_indicadores <- paste0("SELECT ", out,
                                 " FROM ivp.loc_rur_2010 LIMIT 10;")
     indi <- ipa::db_get_table(conn = conexion,
-                                         statement = query_indicadores)
-    output$data_table <- renderTable(indi)
+                              statement = query_indicadores)
+  })
+  
+  observe({
+    req(df_localidades_indicadores())
+    output$data_table <- renderTable(df_localidades_indicadores())
   })
   ### Fin botón de visualización de datos
+  
+  ### Inicio proceso de descarga de datos
+  output$id_descargar <- downloadHandler(
+    filename = function() {
+      paste('data-', Sys.Date(), '.csv', sep='')
+    },
+    content = function(file) {
+      write.csv(df_localidades_indicadores(),
+                file,
+                row.names = FALSE)
+    }
+  )
+  ### Fin proceso de descarga de datos
   
 }
 
