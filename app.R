@@ -81,11 +81,15 @@ ui <- fluidPage(
           # Subtema
           uiOutput(outputId = "subtemaInputUI"),
           # Indicadores
-          uiOutput(outputId = "indicadorInputUI")
+          uiOutput(outputId = "indicadorInputUI"),
+          # Botón para visualizar datos
+          actionButton("id_visualizar", "Ver tabla de datos")
           ),
         
-        # Show a plot of the generated distribution
-        mainPanel()
+        # Muestra la tabla de datos o la infografía
+        mainPanel(
+          tableOutput("data_table")
+          )
     )
 )
 
@@ -189,12 +193,19 @@ server <- function(input, output, session) {
                                           anio = ", anio, ");")
       tbl_indicadores <- ipa::db_get_table(conn = conexion,
                                           statement = query_indicadores)
-      checkboxGroupInput(inputId = "id_indicadores",
+      checkboxGroupInput(inputId = "id_indicadores", 
                          label = "Indicadores",
                          choices = tbl_indicadores$indicadores,
-                         selected = 1)
+                         selected = 1,)
   })
   ###
+  
+  ### Inicio botón de visualización de datos
+  observe({
+    req(input$id_visualizar)
+    output$data_table <- renderTable(iris |> head())
+  })
+  ### Fin botón de visualización de datos
   
 }
 
