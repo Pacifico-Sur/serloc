@@ -34,9 +34,7 @@ lista_temas <- list("Carencia de bienes y medios de comunicación" = 2,
                     "Presencia de población infantil y en edad dependiente" = 6,
                     "Rezago educativo, carencia de auto e internet" = 4,
                     "Aspectos cualitativos de vulnerabilidad" = 10)
-# Año de consulta
-anio_consulta <- list("2010" = 2010,
-                      "2020" = 2020)
+
 ###
 # Define la interfaz de usuario
 ui <- fluidPage(
