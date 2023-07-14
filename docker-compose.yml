@@ -1,0 +1,35 @@
+version: "3.3"
+
+services:
+  rstudio:
+    image: davidmacer/rstudio
+    container_name: rstudio-serloc
+    restart: always
+    volumes:
+      - type: volume
+        source: rstudio
+        target: /app
+      - type: bind
+        source: $PWD
+        target: /home/rstudio
+    network_mode: database_database_network
+    environment:
+      - PASSWORD=rstudio
+    ports:
+      - "8787:8787"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cont-serloc
+    restart: always
+    volumes: 
+      - $PWD:/app
+    network_mode: database_database_network
+    ports: 
+      - "3737:4040"
+      
+volumes:
+  app:
+  rstudio:
