@@ -47,11 +47,7 @@ ui <- fluidPage(
 
     # Sidebar with a slider input for number of bins
     sidebarLayout(
-        sidebarPanel(),
-        
-        # Show a plot of the generated distribution
-        mainPanel(
-          # El usuario escoge qué tipo de consulta quiere hacer
+        sidebarPanel(# El usuario escoge qué tipo de consulta quiere hacer
           div(
             selectInput(inputId = "id_tipo_consulta",
                         label = "Tipo de consulta",
@@ -90,8 +86,11 @@ ui <- fluidPage(
           ),
           uiOutput(outputId = "subtemaInputUI"),
           # Indicadores
-          uiOutput(outputId = "indicadorInputUI"),
-        )
+          uiOutput(outputId = "indicadorInputUI")
+          ),
+        
+        # Show a plot of the generated distribution
+        mainPanel()
     )
 )
 
