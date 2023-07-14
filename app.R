@@ -181,29 +181,66 @@ server <- function(input, output, session) {
   })
   ###
   
-  ### Inicio evento para selecciones los indicadores de índice y nivel
-  output$indicadorInputUI <- renderUI({
+  ### Inicio evento para seleccionar los indicadores de índice y nivel
+  df_indicadores <- reactive({
+    # Requiere el tema y el año para hacer la consulta
     req(input$id_tema, input$id_anio)
     
-    id_tema <- input$id_tema
-    anio <- input$id_anio
     query_indicadores <- paste0("SELECT * FROM catalogo.indicadores
                           WHERE cve_sub = (SELECT cve_sub FROM catalogo.subtema
-                                          WHERE cve_tem = ", id_tema, " and 
-                                          anio = ", anio, ");")
-      tbl_indicadores <- ipa::db_get_table(conn = conexion,
-                                          statement = query_indicadores)
-      checkboxGroupInput(inputId = "id_indicadores", 
+                                          WHERE cve_tem = ", input$id_tema, " and 
+                                          anio = ", input$id_anio, ");")
+    
+    # Extrae la tabla de indicadores para el tema y el año. El año lo ocupo para
+    # poder extraer las claves de los indicadores de ese año
+    tbl_indicadores <- ipa::db_get_table(conn = conexion,
+                                         statement = query_indicadores)
+    
+    })
+  
+  output$indicadorInputUI <- renderUI({
+    req(df_indicadores())
+    
+    # Extraigo la clave del subtema y el nombre del indicador para que sea 
+    # llave-valor en el checkgroup
+    lista_indicadores <- df_indicadores() |>
+      select(id, indicadores)
+    lista_indicadores <- setNames(
+      as.list(lista_indicadores$id), lista_indicadores$indicadores)
+    
+    checkboxGroupInput(inputId = "id_indicadores", 
                          label = "Indicadores",
-                         choices = tbl_indicadores$indicadores,
-                         selected = 1,)
+                         choices = lista_indicadores,
+                         selected = 1)
+      
   })
   ###
   
+  indicadores_seleccionados <- reactive({
+    req(input$id_indicadores)
+    df_indicadores <- c(input$id_indicadores)
+    })
+  
   ### Inicio botón de visualización de datos
   observe({
-    req(input$id_visualizar)
-    output$data_table <- renderTable(iris |> head())
+    req(input$id_visualizar, input$id_tema, input$id_anio)
+    
+    id_tema <- input$id_tema
+    anio <- input$id_anio
+    
+    # Extraigo la clave del indicador (cve_ind) de df_indicadores según el
+    # id del indicador seleccionado
+    clave_indicador <- df_indicadores() |>
+      filter(id == indicadores_seleccionados()) |>
+      pull(cve_ind) |>
+      toupper()
+    # Extrae los indicadores según el estado, municipio, localidad, tema, 
+    # subtema (se es el caso), año e indicadores seleccionados
+    query_indicadores <- paste0("SELECT ", "\"", clave_indicador, "\"",
+                                " FROM ivp.loc_rur_2010 LIMIT 10;")
+    indi <- ipa::db_get_table(conn = conexion,
+                                         statement = query_indicadores)
+    output$data_table <- renderTable(indi)
   })
   ### Fin botón de visualización de datos
   
