@@ -24,18 +24,8 @@ estados <- list("Selecciona un estado" = 0,
                 "Chiapas" = 7,
                 "Guerrero" = 12,
                 "Oaxaca" = 20)
-# Temas que el usuario puede escoger
-lista_temas <- list("Carencia de bienes y medios de comunicación" = 2,
-                    "Exclusión indígena" = 3,
-                    "Incidencia de analfabetismo" = 7,
-                    "Presencia de piso de tierra, carencia de agua y saneamiento" = 5,
-                    "Presencia de población económicamente inactiva" = 9,
-                    "Presencia de población en edad avanzada y población con discapacidad" = 8,
-                    "Presencia de población infantil y en edad dependiente" = 6,
-                    "Rezago educativo, carencia de auto e internet" = 4,
-                    "Aspectos cualitativos de vulnerabilidad" = 10)
-
 ###
+
 # Define la interfaz de usuario
 ui <- fluidPage(
 
@@ -75,14 +65,13 @@ ui <- fluidPage(
           div(
             selectInput(inputId = "id_tema",
                         label = "Tema",
-                        choices = lista_temas)
+                        choices = NULL)
           ),
           # Año de interés
           uiOutput(outputId = "id_anio"),
           # Subtema
           uiOutput(outputId = "subtemaInputUI"),
           # Indicadores
-          checkboxInput('bar', 'All/None'),
           uiOutput(outputId = "indicadorInputUI"),
           # Botón para visualizar datos
           actionButton("id_visualizar", "Ver tabla de datos")
@@ -147,12 +136,34 @@ server <- function(input, output, session) {
     localidades <- primer_elemento |>
       append(localidades)
     
-    # Can also set the label and select items
+    # Actualiza selectInput de id_localidades
     updateSelectInput(session, "id_localidades",
                       label = "Localidades",
                       choices = localidades)
   })
-  ###
+  ### Fin evento para llenar la lista de localidades según el municipio seleccionado
+  observe({
+    req(input$id_localidades)
+    
+    # Temas que el usuario puede escoger
+    lista_temas <- list("Carencia de bienes y medios de comunicación" = 2,
+                        "Exclusión indígena" = 3,
+                        "Incidencia de analfabetismo" = 7,
+                        "Presencia de piso de tierra, carencia de agua y saneamiento" = 5,
+                        "Presencia de población económicamente inactiva" = 9,
+                        "Presencia de población en edad avanzada y población con discapacidad" = 8,
+                        "Presencia de población infantil y en edad dependiente" = 6,
+                        "Rezago educativo, carencia de auto e internet" = 4,
+                        "Aspectos cualitativos de vulnerabilidad" = 10)
+    
+    # Actualiza selectInput de id_localidades
+    updateSelectInput(session, "id_tema",
+                      label = "Tema",
+                      choices = lista_temas)
+  })
+  ### Inicio evento para mostrar el selectInput de tema
+  
+  ### Fin evento para mostrar el selectInput de tema
   
   ### Muestra la lista de subtemas cuando selecciona 
   # Aspectos cualitativos de vulnerabilidad y esconde el elemento 
