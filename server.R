@@ -30,6 +30,17 @@ server <- function(input, output, session) {
         )
       )
       ### Fin evento para mostrar la casilla de selección de municipio
+      
+      ### Inicio evento para mostrar la casilla de selección de localidades
+      output$id_localidades <- renderUI(
+        selectInput(
+          inputId = "id_localidades",
+          label = "Localidad",
+          choices = NULL,
+          multiple = TRUE
+        )
+      )
+      ### Fin evento para mostrar la casilla de selección de localidades
     }
   })
   ### Evento para llenar la lista de municipios según el estado seleccionado

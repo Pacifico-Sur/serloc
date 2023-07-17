@@ -48,10 +48,7 @@ ui <- fluidPage(
           ),
           # El contenido de la lista de localidades se llena según el municipio seleccionado
           div(
-            selectInput(inputId = "id_localidades",
-                        label = "Localidad",
-                        choices = NULL,
-                        multiple = TRUE)
+            uiOutput(outputId = "id_localidades")
           ),
           # Temas de interés
           div(
