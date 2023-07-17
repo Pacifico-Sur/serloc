@@ -1,103 +1,18 @@
-library(shiny)
-library(DBI)
-library(magrittr)
-library(tibble)
-library(sf)
-library(dplyr)
-library(RPostgres)
-
-if (!require("ipa")) remotes::install_gitlab("davidmacer/ipa@develop")
-
 # Conecta con la base de datos del servicio de localidades
 conexion <- ipa::db_connect(dbname = "siclr_db",
                             host = "database")
 
-### Define las variables de entrada para las listas desplegables
-# Tipo de consulta
-tipo_consulta <- list("Selecciona una opción de consulta" = "null",
-                      "Localidades" = "id_loc",
-                      "Propiedad social" = "id_ps",
-                      "Propiedad privada" = "id_pp",
-                      "Municipio" = "id_mun")
-# Estados de Pacífico Sur
-estados <- list("Selecciona un estado" = 0,
-                "Chiapas" = 7,
-                "Guerrero" = 12,
-                "Oaxaca" = 20)
-###
-
-# Define la interfaz de usuario
-ui <- fluidPage(
-
-    # Application title
-    titlePanel("Servicio de Información y Conocimiento de 
-               Localidades Rurales y sus Territorios"),
-
-    # Sidebar with a slider input for number of bins
-    sidebarLayout(
-        sidebarPanel(# El usuario escoge qué tipo de consulta quiere hacer
-          div(
-            selectInput(inputId = "id_tipo_consulta",
-                        label = "Tipo de consulta",
-                        choices = tipo_consulta,
-                        selected = NULL)
-          ),
-          # Debe escoger el estado de interés
-          div(
-            selectInput(inputId = "id_estado",
-                        label = "Estado",
-                        choices = estados)
-          ),
-          # El contenido de la lista de municipios se llena según el estado seleccionado
-          div(
-            selectInput(inputId = "id_municipio",
-                        label = "Municipio",
-                        choices = NULL)
-          ),
-          # El contenido de la lista de localidades se llena según el municipio seleccionado
-          div(
-            selectInput(inputId = "id_localidades",
-                        label = "Localidad",
-                        choices = NULL,
-                        multiple = TRUE)
-          ),
-          # Temas de interés
-          div(
-            selectInput(inputId = "id_tema",
-                        label = "Tema",
-                        choices = NULL)
-          ),
-          # Año de interés
-          uiOutput(outputId = "id_anio"),
-          # Subtema
-          uiOutput(outputId = "subtemaInputUI"),
-          # Indicadores
-          uiOutput(outputId = "indicadorInputUI"),
-          # Botón para visualizar datos
-          actionButton("id_visualizar", "Ver tabla de datos")
-          ),
-        
-        # Muestra la tabla de datos o la infografía
-        mainPanel(
-          tableOutput(outputId = "data_table"),
-          
-          # Botón para descargar los datos
-          downloadButton(outputId = "id_descargar",
-                         label = "Descargar datos")
-          )
-    )
-)
-
-# Define server logic required to draw a histogram
+# Define la lógica del servidor
 server <- function(input, output, session) {
   
   ### Evento para llenar la lista de municipios según el estado seleccionado
   observe({
-    id_estado <- input$id_estado
+    req(input$id_estado)
     
     # Extrae de la BD los municipios del estado seleccionado
     query_municipios <- paste("SELECT * FROM edo_mun.municipios WHERE ",
-                              "\"ID_ENT\"", " = ", id_estado, ";")
+                              "\"ID_ENT\"", " = ", input$id_estado, ";")
+    
     municipios <- ipa::db_get_table(conn = conexion,
                                     statement = query_municipios)
     municipios <- municipios |>
@@ -213,7 +128,7 @@ server <- function(input, output, session) {
     tbl_indicadores <- ipa::db_get_table(conn = conexion,
                                          statement = query_indicadores)
     
-    })
+  })
   
   output$indicadorInputUI <- renderUI({
     req(df_indicadores())
@@ -227,17 +142,17 @@ server <- function(input, output, session) {
     
     
     checkboxGroupInput(inputId = "id_indicadores", 
-                         label = "Indicadores",
-                         choices = lista_indicadores,
-                         selected = 1)
-      
+                       label = "Indicadores",
+                       choices = lista_indicadores,
+                       selected = 1)
+    
   })
   ###
   
   indicadores_seleccionados <- reactive({
     req(input$id_indicadores)
     df_indicadores <- input$id_indicadores
-    })
+  })
   
   ### Inicio botón de visualización de datos
   df_localidades_indicadores <- reactive({
@@ -282,15 +197,12 @@ server <- function(input, output, session) {
   output$id_descargar <- downloadHandler(
     filename = function() {
       paste('data-', Sys.Date(), '.csv', sep='')
-      },
+    },
     content = function(file) {
       write.csv(df_localidades_indicadores(),
                 file,
                 row.names = FALSE)
-      }
-    )
+    }
+  )
   ### Fin proceso de descarga de datos
-  }
-
-# Run the application 
-shinyApp(ui = ui, server = server)
+}
