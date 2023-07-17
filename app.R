@@ -241,7 +241,7 @@ server <- function(input, output, session) {
   
   ### Inicio botón de visualización de datos
   df_localidades_indicadores <- reactive({
-    req(input$id_visualizar, input$id_tema, input$id_anio)
+    req(input$id_localidades, input$id_visualizar, input$id_tema, input$id_anio)
     
     id_tema <- input$id_tema
     anio <- input$id_anio
