@@ -262,9 +262,12 @@ server <- function(input, output, session) {
     
     # Extrae los indicadores según el estado, municipio, localidad, tema, 
     # subtema (se es el caso), año e indicadores seleccionados
-    query_indicadores <- paste0("SELECT ", clave_indicadores,
-                                " FROM ivp.", tabla_localidades_bd,
-                                " LIMIT 10;")
+    localidades_seleccionadas <- paste(input$id_localidades, collapse=",")
+    query_indicadores <- paste0("select b.\"NOM_LOC\" as \"Localidad\", a.\"FCB_0201\", a.\"FCB_0201\" ",
+                                "FROM ivp.loc_rur_2010 as a ",
+                                "INNER JOIN loc.localidades as b ",
+                                "ON a.\"CGLOC\" = b.\"CGLOC\" AND ",
+                                "b.\"ID_LOC\" in (", localidades_seleccionadas, ");")
     indi <- ipa::db_get_table(conn = conexion,
                               statement = query_indicadores)
   })
@@ -279,16 +282,15 @@ server <- function(input, output, session) {
   output$id_descargar <- downloadHandler(
     filename = function() {
       paste('data-', Sys.Date(), '.csv', sep='')
-    },
+      },
     content = function(file) {
       write.csv(df_localidades_indicadores(),
                 file,
                 row.names = FALSE)
-    }
-  )
+      }
+    )
   ### Fin proceso de descarga de datos
-  
-}
+  }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
