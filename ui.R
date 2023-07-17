@@ -40,9 +40,7 @@ ui <- fluidPage(
           ),
           # Debe escoger el estado de interés
           div(
-            selectInput(inputId = "id_estado",
-                        label = "Estado",
-                        choices = estados)
+            uiOutput(outputId = "id_estado")
           ),
           # El contenido de la lista de municipios se llena según el estado seleccionado
           div(

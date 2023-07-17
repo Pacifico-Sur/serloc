@@ -5,6 +5,23 @@ conexion <- ipa::db_connect(dbname = "siclr_db",
 # Define la lógica del servidor
 server <- function(input, output, session) {
   
+  observeEvent(input$id_tipo_consulta, ignoreNULL = FALSE, {
+    if (input$id_tipo_consulta == "id_loc") {
+      ### Inicio evento para mostrar la selección del estado
+      output$id_estado <- renderUI(
+        selectInput(
+          inputId = 'id_estado',
+          label = 'Estado',
+          selected = '',
+          choices = list("Selecciona un estado" = 0,
+                         "Chiapas" = 7,
+                         "Guerrero" = 12,
+                         "Oaxaca" = 20)
+        )
+      )
+      ### Fin evento para mostrar la selección del estado
+    }
+  })
   ### Evento para llenar la lista de municipios según el estado seleccionado
   observe({
     req(input$id_estado)
