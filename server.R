@@ -36,11 +36,39 @@ server <- function(input, output, session) {
         selectInput(
           inputId = "id_localidades",
           label = "Localidad",
-          choices = NULL,
+          choices = '',
           multiple = TRUE
         )
       )
       ### Fin evento para mostrar la casilla de selección de localidades
+      
+      ### Inicio evento para mostrar la casilla de selección de tema
+      output$id_tema <- renderUI(
+        selectInput(
+          inputId = "id_tema",
+          label = "Tema",
+          choices = NULL
+        )
+      )
+      ### Fin evento para mostrar la casilla de selección de tema
+      
+      ### Inicio evento para mostrar la casilla de selección de tema
+      output$id_subtema <- renderUI(
+        selectInput(
+          inputId = "id_tema",
+          label = "Tema",
+          choices = NULL
+        )
+      )
+      ### Fin evento para mostrar la casilla de selección de tema
+      output$id_visualizar <- renderUI(
+        actionButton("id_visualizar", "Ver tabla de datos")
+      )
+      ### Inicio evento para mostrar botón de descarga de datos
+      
+      ### Inicio evento para mostrar botón de descarga de datos
+    } else if (input$id_tipo_consulta == "id_ps") {
+      output$id_text <- renderText("Estoy en la propiedad social")
     }
   })
   ### Evento para llenar la lista de municipios según el estado seleccionado
@@ -122,50 +150,48 @@ server <- function(input, output, session) {
   ### Muestra la lista de subtemas cuando selecciona 
   # Aspectos cualitativos de vulnerabilidad y esconde el elemento 
   # para escoger año
-  output$subtemaInputUI <- renderUI({
-    if (input$id_tema == 10) {
-      query_subtemas <- "SELECT * FROM catalogo.des_soc_subtema;"
-      lista_subtemas <- ipa::db_get_table(conn = conexion,
-                                          statement = query_subtemas)
-      selectInput(inputId = "id_subtema",
-                  label = "Subtemas",
-                  choices = lista_subtemas$subtema)
-    }
-  })
-  
-  # Muestra la casilla año si el tema es distinto a Aspectos cualitativos de vul.
-  # Este tema solo tiene datos para el 2020, por lo que no tiene caso mostrar la casilla
-  observeEvent(input$id_tema, ignoreNULL = FALSE, {
-    if (input$id_tema == 10){
-      output$id_anio <- renderUI(NULL)
-    } else {
-      output$id_anio <- renderUI(
-        selectInput(
-          inputId = 'id_anio',
-          label = 'Año',
-          selected = '',
-          choices = list("2010" = 2010, "2020" = 2020)
+  observeEvent(input$id_tema, {
+      if (input$id_tema == 10) {
+        output$subtemaInputUI <- renderUI({
+          query_subtemas <- "SELECT * FROM catalogo.des_soc_subtema;"
+          lista_subtemas <- ipa::db_get_table(conn = conexion,
+                                              statement = query_subtemas)
+          selectInput(inputId = "id_subtema",
+                      label = "Subtemas",
+                      choices = lista_subtemas$subtema)
+        })
+        
+        output$id_anio <- renderUI(NULL)
+        
+      } else {
+        output$subtemaInputUI <- renderUI(NULL)
+        
+        output$id_anio <- renderUI(
+          selectInput(
+            inputId = 'id_anio',
+            label = 'Año',
+            selected = '',
+            choices = list("2010" = 2010, "2020" = 2020)
+          )
         )
-      )
-    }
+      }
   })
-  ###
   
   ### Inicio evento para seleccionar los indicadores de índice y nivel
   df_indicadores <- reactive({
     # Requiere el tema y el año para hacer la consulta
     req(input$id_tema, input$id_anio)
-    
+
     query_indicadores <- paste0("SELECT * FROM catalogo.indicadores
                           WHERE cve_sub = (SELECT cve_sub FROM catalogo.subtema
-                                          WHERE cve_tem = ", input$id_tema, " and 
+                                          WHERE cve_tem = ", input$id_tema, " and
                                           anio = ", input$id_anio, ");")
-    
+
     # Extrae la tabla de indicadores para el tema y el año. El año lo ocupo para
     # poder extraer las claves de los indicadores de ese año
     tbl_indicadores <- ipa::db_get_table(conn = conexion,
                                          statement = query_indicadores)
-    
+
   })
   
   output$indicadorInputUI <- renderUI({
@@ -216,7 +242,7 @@ server <- function(input, output, session) {
     # Extrae los indicadores según el estado, municipio, localidad, tema, 
     # subtema (se es el caso), año e indicadores seleccionados
     localidades_seleccionadas <- paste(input$id_localidades, collapse=",")
-    query_indicadores <- paste0("select b.\"NOM_LOC\" as \"Localidad\", a.\"FCB_0201\", a.\"FCB_0201\" ",
+    query_indicadores <- paste0("select b.\"NOM_LOC\" as \"Localidad\", a.\"FCB_0201\", a.\"FCB_0202\" ",
                                 "FROM ivp.loc_rur_2010 as a ",
                                 "INNER JOIN loc.localidades as b ",
                                 "ON a.\"CGLOC\" = b.\"CGLOC\" AND ",

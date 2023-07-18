@@ -52,18 +52,16 @@ ui <- fluidPage(
           ),
           # Temas de interés
           div(
-            selectInput(inputId = "id_tema",
-                        label = "Tema",
-                        choices = NULL)
+            uiOutput(outputId = "id_tema")
           ),
-          # Año de interés
-          uiOutput(outputId = "id_anio"),
           # Subtema
           uiOutput(outputId = "subtemaInputUI"),
+          # Año de interés
+          uiOutput(outputId = "id_anio"),
           # Indicadores
           uiOutput(outputId = "indicadorInputUI"),
           # Botón para visualizar datos
-          actionButton("id_visualizar", "Ver tabla de datos")
+          uiOutput(outputId = "id_visualizar"),
           ),
         
         # Muestra la tabla de datos o la infografía
