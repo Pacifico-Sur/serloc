@@ -257,7 +257,7 @@ server <- function(input, output, session) {
     
     # Separa las claves de indicadores con comas y las pone entre comillas para 
     # usarlas de manera fácil en el query
-    clave_indicadores <- paste(dQuote(clave_indicador, FALSE), collapse=",")
+    clave_indicadores <- paste("a.", dQuote(clave_indicador, FALSE), collapse=",")
     
     # Selecciona la tabla de datos de interés según el año seleccionado
     tabla_localidades_bd <- paste0("loc_rur_", input$id_anio)
@@ -265,8 +265,10 @@ server <- function(input, output, session) {
     # Extrae los indicadores según el estado, municipio, localidad, tema, 
     # subtema (se es el caso), año e indicadores seleccionados
     localidades_seleccionadas <- paste(input$id_localidades, collapse=",")
-    query_indicadores <- paste0("select b.\"NOM_LOC\" as \"Localidad\", a.\"FCB_0201\", a.\"FCB_0202\" ",
-                                "FROM ivp.loc_rur_2010 as a ",
+    query_indicadores <- paste0("select 
+                                  b.\"NOM_LOC\" as \"Localidad\",", 
+                                  clave_indicadores, 
+                                  " FROM ivp.loc_rur_2010 as a ",
                                 "INNER JOIN loc.localidades as b ",
                                 "ON a.\"CGLOC\" = b.\"CGLOC\" AND ",
                                 "b.\"ID_LOC\" in (", localidades_seleccionadas, ");")
