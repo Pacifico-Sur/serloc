@@ -5,75 +5,9 @@ conexion <- ipa::db_connect(dbname = "siclr_db",
 # Define la lógica del servidor
 server <- function(input, output, session) {
   
-  observeEvent(input$id_tipo_consulta, ignoreNULL = FALSE, {
-    if (input$id_tipo_consulta == "id_loc") {
-      ### Inicio evento para mostrar la selección del estado
-      output$id_estado <- renderUI(
-        selectInput(
-          inputId = 'id_estado',
-          label = 'Estado',
-          selected = '',
-          choices = list("Selecciona un estado" = 0,
-                         "Chiapas" = 7,
-                         "Guerrero" = 12,
-                         "Oaxaca" = 20)
-        )
-      )
-      ### Fin evento para mostrar la selección del estado
-      
-      ### Inicio evento para mostrar la casilla de selección de municipio
-      output$id_municipio <- renderUI(
-        selectInput(
-          inputId = "id_municipio",
-          label = "Municipio",
-          choices = NULL
-        )
-      )
-      ### Fin evento para mostrar la casilla de selección de municipio
-      
-      ### Inicio evento para mostrar la casilla de selección de localidades
-      output$id_localidades <- renderUI(
-        selectInput(
-          inputId = "id_localidades",
-          label = "Localidad",
-          choices = '',
-          multiple = TRUE
-        )
-      )
-      ### Fin evento para mostrar la casilla de selección de localidades
-      
-      ### Inicio evento para mostrar la casilla de selección de tema
-      output$id_tema <- renderUI(
-        selectInput(
-          inputId = "id_tema",
-          label = "Tema",
-          choices = NULL
-        )
-      )
-      ### Fin evento para mostrar la casilla de selección de tema
-      
-      ### Inicio evento para mostrar la casilla de selección de tema
-      output$id_subtema <- renderUI(
-        selectInput(
-          inputId = "id_tema",
-          label = "Tema",
-          choices = NULL
-        )
-      )
-      ### Fin evento para mostrar la casilla de selección de tema
-      output$id_visualizar <- renderUI(
-        actionButton("id_visualizar", "Ver tabla de datos")
-      )
-      ### Inicio evento para mostrar botón de descarga de datos
-      
-      ### Inicio evento para mostrar botón de descarga de datos
-    } else if (input$id_tipo_consulta == "id_ps") {
-      output$id_text <- renderText("Estoy en la propiedad social")
-    }
-  })
-  ### Evento para llenar la lista de municipios según el estado seleccionado
-  observe({
-    req(input$id_estado)
+  ### Inicia evento para llenar la lista de municipios según el estado seleccionado
+  ### en el tipo de consulta 'Localidad'
+  observeEvent(input$id_estado, {
     
     # Extrae de la BD los municipios del estado seleccionado
     query_municipios <- paste("SELECT * FROM edo_mun.municipios WHERE ",
@@ -81,6 +15,7 @@ server <- function(input, output, session) {
     
     municipios <- ipa::db_get_table(conn = conexion,
                                     statement = query_municipios)
+    
     municipios <- municipios |>
       as_tibble() |>
       select(id_mun, nomgeo) |>
@@ -88,15 +23,108 @@ server <- function(input, output, session) {
     
     municipios <- setNames(as.list(municipios$id_mun), municipios$nomgeo)
     primer_elemento <- list("Selecciona un municipio" = 0)
+    
+    municipios <- primer_elemento |>
+      append(municipios)
+    
+      # Can also set the label and select items
+      updateSelectInput(session, "id_municipio",
+                        label = "Municipios",
+                        choices = municipios)
+
+  })
+  ### Fin
+  
+  ### Inicia evento para llenar la lista de municipios según el estado seleccionado
+  ### en el tipo de consulta 'Propiedad social'
+  observeEvent(input$id_ps_estado, {
+    
+    # Extrae de la BD los municipios del estado seleccionado
+    query_municipios <- paste("SELECT * FROM edo_mun.municipios WHERE ",
+                              "\"ID_ENT\"", " = ", input$id_ps_estado, ";")
+    
+    municipios <- ipa::db_get_table(conn = conexion,
+                                    statement = query_municipios)
+    
+    municipios <- municipios |>
+      as_tibble() |>
+      select(id_mun, nomgeo) |>
+      arrange(nomgeo)
+    
+    municipios <- setNames(as.list(municipios$id_mun), municipios$nomgeo)
+    primer_elemento <- list("Selecciona un municipio" = 0)
+    
     municipios <- primer_elemento |>
       append(municipios)
     
     # Can also set the label and select items
-    updateSelectInput(session, "id_municipio",
+    updateSelectInput(session, "id_ps_municipio",
                       label = "Municipios",
                       choices = municipios)
+    
   })
   ###
+  ### Fin
+  
+  ### Inicia evento para llenar la lista de municipios según el estado seleccionado
+  ### en el tipo de consulta 'Municipio'
+  observeEvent(input$id_mun_estado, {
+    
+    # Extrae de la BD los municipios del estado seleccionado
+    query_municipios <- paste("SELECT * FROM edo_mun.municipios WHERE ",
+                              "\"ID_ENT\"", " = ", input$id_mun_estado, ";")
+    
+    municipios <- ipa::db_get_table(conn = conexion,
+                                    statement = query_municipios)
+    
+    municipios <- municipios |>
+      as_tibble() |>
+      select(id_mun, nomgeo) |>
+      arrange(nomgeo)
+    
+    municipios <- setNames(as.list(municipios$id_mun), municipios$nomgeo)
+    primer_elemento <- list("Selecciona un municipio" = 0)
+    
+    municipios <- primer_elemento |>
+      append(municipios)
+    
+    # Can also set the label and select items
+    updateSelectInput(session, "id_mun_municipio",
+                      label = "Municipios",
+                      choices = municipios)
+    
+  })
+  ### Fin
+  
+  ### Inicia evento para llenar la lista de municipios según el estado seleccionado
+  ### en el tipo de consulta 'Propiedad privada'
+  observeEvent(input$id_pp_estado, {
+    
+    # Extrae de la BD los municipios del estado seleccionado
+    query_municipios <- paste("SELECT * FROM edo_mun.municipios WHERE ",
+                              "\"ID_ENT\"", " = ", input$id_pp_estado, ";")
+    
+    municipios <- ipa::db_get_table(conn = conexion,
+                                    statement = query_municipios)
+    
+    municipios <- municipios |>
+      as_tibble() |>
+      select(id_mun, nomgeo) |>
+      arrange(nomgeo)
+    
+    municipios <- setNames(as.list(municipios$id_mun), municipios$nomgeo)
+    primer_elemento <- list("Selecciona un municipio" = 0)
+    
+    municipios <- primer_elemento |>
+      append(municipios)
+    
+    # Can also set the label and select items
+    updateSelectInput(session, "id_pp_municipio",
+                      label = "Municipios",
+                      choices = municipios)
+    
+  })
+  ### Fin
   
   ### Inicio evento para llenar la lista de localidades según el municipio seleccionado
   observe({
@@ -167,12 +195,7 @@ server <- function(input, output, session) {
         output$subtemaInputUI <- renderUI(NULL)
         
         output$id_anio <- renderUI(
-          selectInput(
-            inputId = 'id_anio',
-            label = 'Año',
-            selected = '',
-            choices = list("2010" = 2010, "2020" = 2020)
-          )
+          selectInput_anio()
         )
       }
   })
