@@ -220,10 +220,11 @@ server <- function(input, output, session) {
   output$indicadorInputUI <- renderUI({
     req(df_indicadores())
     
-    # Extraigo la clave del subtema y el nombre del indicador para que sea 
-    # llave-valor en el checkgroup
+    # Extraigo el id del subtema y el nombre del indicador para que sea 
+    # key-value en el checkgroup
     lista_indicadores <- df_indicadores() |>
       select(id, indicadores)
+    # Convierte en lista de key-value
     lista_indicadores <- setNames(
       as.list(lista_indicadores$id), lista_indicadores$indicadores)
     
@@ -286,12 +287,28 @@ server <- function(input, output, session) {
   output$id_descargar <- downloadHandler(
     filename = function() {
       paste('data-', Sys.Date(), '.csv', sep='')
-    },
+      },
     content = function(file) {
       write.csv(df_localidades_indicadores(),
                 file,
                 row.names = FALSE)
+      }
+    )
+  ### Fin proceso de descarga de datos
+  
+  ### Inicia proceso de creación y descarga de mapa de municipio y localidades
+  my_plot <- reactive({
+    mapa_municipio_localidades(id_mun = input$id_municipio)
+  })
+  
+  output$downloadPlot <- downloadHandler(
+    filename = function() { "output.pdf" },
+    content = function(file) {
+      pdf(file, paper = "default")
+      plot(my_plot())
+      dev.off()
     }
   )
-  ### Fin proceso de descarga de datos
+  ### Fin proceso de creación y descarga de mapa de municipio y localidades
+  
 }

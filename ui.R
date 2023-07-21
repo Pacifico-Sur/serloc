@@ -8,6 +8,7 @@ library(RPostgres)
 
 if (!require("ipa")) remotes::install_gitlab("davidmacer/ipa@develop")
 source("./R/funciones.R")
+source("./R/mapa_municipio_localidades.R")
 
 ### Define las variables de entrada para las listas desplegables
 # Tipo de consulta
@@ -146,8 +147,16 @@ ui <- fluidPage(
           tableOutput(outputId = "data_table"),
           
           # Botón para descargar los datos
-          downloadButton(outputId = "id_descargar",
-                         label = "Descargar datos")
+          downloadButton(
+            outputId = "id_descargar",
+            label = "Descargar datos"
+          ),
+          
+          # Botón para descargar el descriptor de datos
+          downloadButton(
+            outputId = "downloadPlot",
+            label = "Descargar mapa del municipio"
           )
+        )
     )
 )
