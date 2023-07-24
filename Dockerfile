@@ -21,7 +21,7 @@ RUN R -e "remotes::install_gitlab('davidmacer/ipa@develop')"
 # Difine app/ como el directorio de trabajo dentro del contenedor
 WORKDIR /app 
 # Copia los archivos que están dentro de /serloc-app al directorio de trabajo
-COPY /serloc-app /app
+COPY . /app
 # Otorga todos los permisos al wordir 
 RUN chmod -R 755 /app
 # Expón el puerto del contenedor
