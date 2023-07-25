@@ -142,14 +142,15 @@ server <- function(input, output, session) {
       arrange(nom_loc)
     
     localidades <- setNames(as.list(localidades$id_loc), localidades$nom_loc)
-    primer_elemento <- list("Localidad" = 0)
-    localidades <- primer_elemento |>
-      append(localidades)
+    # primer_elemento <- list("Localidad" = 0)
+    # localidades <- primer_elemento |>
+    #   append(localidades)
     
     # Actualiza selectInput de id_localidades
     updateSelectInput(session, "id_localidades",
                       label = "Localidades",
-                      choices = localidades)
+                      choices = localidades,
+                      selected = NULL)
   })
   ### Fin evento para llenar la lista de localidades según el municipio seleccionado
   observe({
