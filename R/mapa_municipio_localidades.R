@@ -78,7 +78,7 @@ mapa_municipio_localidades <- function(id_mun = 1458) {
             alpha = 0.6) +
     coord_sf(expand = FALSE) +
     scale_fill_identity() +
-    labs(title = paste0("Municipio de ", municipio$nomgeo, ", ", estado$nomgeo),
+    labs(title = paste0(municipio$nomgeo, ", ", estado$nomgeo),
          x = "Longitud",
          y = "Latitud",
          caption = "CentroGeo. Servicio de Información y Conocimiento de Localidades Rurales") +
