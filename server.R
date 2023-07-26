@@ -263,9 +263,6 @@ server <- function(input, output, session) {
   df_localidades_indicadores <- reactive({
     req(input$id_localidades, input$id_visualizar, input$id_tema, input$id_anio)
     
-    # id_tema <- input$id_tema
-    # anio <- input$id_anio
-    
     # Extraigo la clave del indicador (cve_ind) de df_indicadores según el
     # id del indicador seleccionado
     clave_indicador <- df_indicadores() |>
@@ -277,25 +274,57 @@ server <- function(input, output, session) {
     # usarlas de manera fácil en el query
     clave_indicadores <- paste("a.", dQuote(clave_indicador, FALSE), collapse=",")
     
-    # Selecciona la tabla de datos de interés según el año seleccionado
-    tabla_localidades_bd <- paste0("loc_rur_", input$id_anio)
-    
     # Extrae los indicadores según el estado, municipio, localidad, tema, 
     # subtema (se es el caso), año e indicadores seleccionados
-    localidades_seleccionadas <- paste(input$id_localidades, collapse=",")
-    query_indicadores <- paste0("select 
-                                  b.\"NOM_LOC\" as \"Localidad\",", 
-                                  clave_indicadores, 
-                                  " FROM ivp.loc_rur_2010 as a ",
-                                "INNER JOIN loc.localidades as b ",
-                                "ON a.\"CGLOC\" = b.\"CGLOC\" AND ",
-                                "b.\"ID_LOC\" in (", localidades_seleccionadas, ");")
+    localidades_seleccionadas <- paste(input$id_localidades, collapse = ",")
+    
+    # Si el tema es distinto de Aspectos cualitativos de vulnerabilidad accede 
+    # a la tabla de vulnerabilidad de localidades rurales
+    if (input$id_tema != 10) {
+      # Selecciona la tabla de datos de interés según el año seleccionado
+      tabla_localidades_bd <- paste0("ivp.loc_rur_", input$id_anio)
+      
+      query_indicadores <- paste0(
+        "select b.\"NOM_LOC\" as \"Localidad\",", clave_indicadores, 
+        " FROM ", tabla_localidades_bd, " as a ",
+        "INNER JOIN loc.localidades as b ",
+          "ON a.\"CGLOC\" = b.\"CGLOC\" AND ",
+          "b.\"ID_LOC\" in (", localidades_seleccionadas, ");")
+    } else {
+      tabla_localidades_bd <- "ivp.des_local_2020"
+      
+      query_indicadores <- paste0(
+        "select b.\"NOM_LOC\" as \"Localidad\",", clave_indicadores, 
+        " FROM ", tabla_localidades_bd, " as a ",
+        "INNER JOIN loc.localidades as b ",
+        "ON a.\"CGLOC\" = b.\"CGLOC\" AND ",
+        "b.\"ID_LOC\" in (", localidades_seleccionadas, ");")
+    }
+    
     indi <- ipa::db_get_table(conn = conexion,
                               statement = query_indicadores)
   })
   
-  observe({
-    output$data_table <- renderTable(df_localidades_indicadores())
+  observeEvent(df_localidades_indicadores(), {
+    
+    # Extrae la clave de los indicadores seleccionados
+    clave_indicador <- df_indicadores() |>
+      filter(id %in% indicadores_seleccionados()) |>
+      pull(cve_ind) |>
+      toupper()
+    
+    # Extrae los nombres de los indicadores usando la clave del indicador
+    indicadores_nombre_largo <- df_indicadores() |>
+      filter(cve_ind %in% clave_indicador) |> pull(indicadores)
+    
+    # Crea un vector para cambiar los nombres de los atributos de la tabla 
+    # que se muestra al usuario en la aplicación
+    tabla_para_mostrar <- df_localidades_indicadores()
+    indicadores_nombre_largo <- c("Localidad", indicadores_nombre_largo)
+    colnames(tabla_para_mostrar) <- indicadores_nombre_largo
+    
+    # Renderiza la tabla para mostrar al usuario
+    output$data_table <- renderTable(tabla_para_mostrar)
   })
   ### Fin botón de visualización de datos
   
