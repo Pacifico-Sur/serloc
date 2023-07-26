@@ -149,6 +149,14 @@ ui <- fluidPage(
             label = "Descargar datos"
           ),
           
+          
+          
+          # Botón para descargar el descriptor de datos
+          downloadButton(
+            outputId = "descargarDescriptor",
+            label = "Descargar descriptor"
+          ),
+          
           # Botón para descargar el descriptor de datos
           downloadButton(
             outputId = "downloadPlot",

@@ -312,6 +312,31 @@ server <- function(input, output, session) {
     )
   ### Fin proceso de descarga de datos
   
+  ### Inicia proceso de descarga de descriptor de datos
+  output$descargarDescriptor <- downloadHandler(
+    # Nombre del archivo que se va a guardar
+    filename = "descriptor_datos.pdf",
+    content = function(file) {
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempReport <- file.path(tempdir(), "report.Rmd")
+      file.copy("./docs/report.Rmd", tempReport, overwrite = TRUE)
+      
+      # Set up parameters to pass to Rmd document
+      # params <- list(n = input$slider)
+      
+      # Knit the document, passing in the `params` list, and eval it in a
+      # child of the global environment (this isolates the code in the document
+      # from the code in this app).
+      rmarkdown::render(tempReport, output_file = file,
+                        # params = params,
+                        envir = new.env(parent = globalenv())
+      )
+    }
+  )
+  ### Fin proceso de descarga de descriptor de datos
+  
   ### Inicia proceso de creación y descarga de mapa de municipio y localidades
   my_plot <- reactive({
     mapa_municipio_localidades(id_mun = input$id_municipio)
