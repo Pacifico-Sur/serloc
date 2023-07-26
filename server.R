@@ -129,11 +129,10 @@ server <- function(input, output, session) {
   ### Inicio evento para llenar la lista de localidades según el municipio seleccionado
   observe({
     req(input$id_municipio)
-    id_mun <- input$id_municipio
     
     # Extrae de la BD los municipios del estado seleccionado
     query_localidades <- paste("SELECT * FROM loc.localidades WHERE ",
-                               "\"ID_MUN\"", " = ", id_mun, ";")
+                               "\"ID_MUN\"", " = ", input$id_municipio, ";")
     localidades <- ipa::db_get_table(conn = conexion,
                                      statement = query_localidades)
     localidades <- localidades |>
@@ -153,8 +152,9 @@ server <- function(input, output, session) {
                       selected = NULL)
   })
   ### Fin evento para llenar la lista de localidades según el municipio seleccionado
+  
+  ### Inicia evento para llenar lista de selección de temas
   observe({
-    req(input$id_localidades)
     
     # Temas que el usuario puede escoger
     lista_temas <- list("Carencia de bienes y medios de comunicación" = 2,
@@ -167,14 +167,12 @@ server <- function(input, output, session) {
                         "Rezago educativo, carencia de auto e internet" = 4,
                         "Aspectos cualitativos de vulnerabilidad" = 10)
     
-    # Actualiza selectInput de id_localidades
+    # Actualiza selectInput de id_tema
     updateSelectInput(session, "id_tema",
                       label = "Tema",
                       choices = lista_temas)
   })
-  ### Inicio evento para mostrar el selectInput de tema
-  
-  ### Fin evento para mostrar el selectInput de tema
+  ### Fin evento para llenar lista de selección de temas
   
   ### Muestra la lista de subtemas cuando selecciona 
   # Aspectos cualitativos de vulnerabilidad y esconde el elemento 
@@ -185,9 +183,17 @@ server <- function(input, output, session) {
           query_subtemas <- "SELECT * FROM catalogo.des_soc_subtema;"
           lista_subtemas <- ipa::db_get_table(conn = conexion,
                                               statement = query_subtemas)
+          lista_subtemas <- lista_subtemas |>
+            as_tibble() |>
+            select(id, subtema) |>
+            arrange(subtema)
+          
+          lista_subtemas <- setNames(
+            as.list(lista_subtemas$id), lista_subtemas$subtema)
+          
           selectInput(inputId = "id_subtema",
                       label = "Subtemas",
-                      choices = lista_subtemas$subtema)
+                      choices = lista_subtemas)
         })
         
         output$id_anio <- renderUI(NULL)
@@ -205,11 +211,21 @@ server <- function(input, output, session) {
   df_indicadores <- reactive({
     # Requiere el tema y el año para hacer la consulta
     req(input$id_tema, input$id_anio)
-
-    query_indicadores <- paste0("SELECT * FROM catalogo.indicadores
+    
+    if (input$id_tema != 10) {
+      query_indicadores <- paste0("SELECT * FROM catalogo.indicadores
                           WHERE cve_sub = (SELECT cve_sub FROM catalogo.subtema
                                           WHERE cve_tem = ", input$id_tema, " and
                                           anio = ", input$id_anio, ");")
+    } else {
+      query_indicadores <- paste0(
+      "SELECT *
+      FROM catalogo.des_soc_indicadores
+      WHERE cve_sub = 
+        (SELECT cve_sub
+        FROM catalogo.des_soc_subtema
+        WHERE id = ", input$id_subtema, ");")
+    }
 
     # Extrae la tabla de indicadores para el tema y el año. El año lo ocupo para
     # poder extraer las claves de los indicadores de ese año
@@ -247,8 +263,8 @@ server <- function(input, output, session) {
   df_localidades_indicadores <- reactive({
     req(input$id_localidades, input$id_visualizar, input$id_tema, input$id_anio)
     
-    id_tema <- input$id_tema
-    anio <- input$id_anio
+    # id_tema <- input$id_tema
+    # anio <- input$id_anio
     
     # Extraigo la clave del indicador (cve_ind) de df_indicadores según el
     # id del indicador seleccionado
@@ -279,7 +295,6 @@ server <- function(input, output, session) {
   })
   
   observe({
-    req(df_localidades_indicadores())
     output$data_table <- renderTable(df_localidades_indicadores())
   })
   ### Fin botón de visualización de datos
