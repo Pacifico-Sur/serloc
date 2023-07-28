@@ -18,9 +18,11 @@ tipo_consulta <- list("Selecciona una opción de consulta" = "null",
 
 # Define la interfaz de usuario
 ui <- fluidPage(
-
-    # Application title
-    titlePanel("Servicio de Información y Conocimiento de 
+  
+  shinyjs::useShinyjs(),  # Set up shinyjs
+  
+  # Application title
+  titlePanel("Servicio de Información y Conocimiento de 
                Localidades Rurales y sus Territorios"),
 
     # Sidebar with a slider input for number of bins
@@ -49,8 +51,10 @@ ui <- fluidPage(
             uiOutput(outputId = "id_anio"),
             # Checkbox de indicadores
             uiOutput(outputId = "indicadorInputUI"),
+            # Checkbox de variables
+            uiOutput(outputId = "variablesInputUI"),
             # Botón para visualizar datos
-            actionButton("id_visualizar", "Ver tabla de datos")
+            # actionButton("id_visualizar", "Ver tabla de datos")
           ),
           
           ### Inicio panel para mostrar los elementos para municipio
@@ -152,10 +156,10 @@ ui <- fluidPage(
           
           
           # Botón para descargar el descriptor de datos
-          downloadButton(
-            outputId = "descargarDescriptor",
-            label = "Descargar descriptor"
-          ),
+          # downloadButton(
+          #   outputId = "descargarDescriptor",
+          #   label = "Descargar descriptor"
+          # ),
           
           # Botón para descargar el descriptor de datos
           downloadButton(
