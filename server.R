@@ -237,14 +237,13 @@ server <- function(input, output, session) {
 
   })
   
-  ### Inicia evento para crear los indicadores de índice y nivel
+  ### Inicia evento para crear checkboxgroup de los indicadores de índice y nivel
   lista_indice_nivel <- reactive({
     es_indice_nivel <- df_indicadores() |>
       pull(cve_ind) |>
       stringr::str_ends(c("01|2"))
     
-    lista_indice_nivel <- df_indicadores()[es_indice_nivel, ]# |>
-      # select(id, indicadores)
+    lista_indice_nivel <- df_indicadores()[es_indice_nivel, ]
     lista_indice_nivel <- setNames(
       as.list(lista_indice_nivel$id), lista_indice_nivel$indicadores)
   })
@@ -256,7 +255,7 @@ server <- function(input, output, session) {
                        choices = lista_indice_nivel(),
                        selected = 1)
   })
-  ###
+  ### Fin evento para crear checkboxgroup de los indicadores de índice y nivel
   
   clave_indicador <- reactive({
     df_indicadores() |>
