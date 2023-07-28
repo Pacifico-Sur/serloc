@@ -252,16 +252,58 @@ server <- function(input, output, session) {
     
     checkboxGroupInput(inputId = "id_indicadores", 
                        label = "Indicadores",
-                       choices = lista_indice_nivel(),
-                       selected = 1)
+                       choices = lista_indice_nivel())
   })
   ### Fin evento para crear checkboxgroup de los indicadores de índice y nivel
   
-  clave_indicador <- reactive({
-    df_indicadores() |>
-      filter(id %in% input$id_indicadores) |>
+  observeEvent(input$id_indicadores, {
+    if (input$id_indicadores |> isTruthy()) {
+      shinyjs::hide(id = "id_variables")
+    } else {
+      shinyjs::show(id = "id_variables")
+    }
+  }, ignoreNULL = FALSE)
+  
+  observeEvent(input$id_variables, {
+    if (input$id_variables |> isTruthy()) {
+      shinyjs::hide(id = "id_indicadores")
+    } else {
+      shinyjs::show(id = "id_indicadores")
+    }
+  }, ignoreNULL = FALSE)
+  
+  ### Inicia evento para crear checkboxgroup de las variables
+  lista_variables <- reactive({
+    es_indice_nivel <- df_indicadores() |>
       pull(cve_ind) |>
-      toupper()
+      stringr::str_ends(c("01|2"))
+    
+    lista_indice_nivel <- df_indicadores()[!es_indice_nivel, ]
+    lista_indice_nivel <- setNames(
+      as.list(lista_indice_nivel$id), lista_indice_nivel$indicadores)
+  })
+  
+  output$variablesInputUI <- renderUI({
+    
+    checkboxGroupInput(inputId = "id_variables", 
+                       label = "Variables",
+                       choices = lista_variables(),
+                       selected = 1)
+  })
+  ### Inicia evento para crear checkboxgroup de las variables
+  
+  clave_indicador <- reactive({
+    if (input$id_indicadores |> isTruthy()) {
+      df_indicadores() |>
+        filter(id %in% input$id_indicadores) |>
+        pull(cve_ind) |>
+        toupper()
+    } else if (input$id_variables |> isTruthy()) {
+      df_indicadores() |>
+        filter(id %in% input$id_variables) |>
+        pull(cve_ind) |>
+        toupper()
+    }
   })
   
   
@@ -269,8 +311,8 @@ server <- function(input, output, session) {
   
   ### Inicio botón de visualización de datos
   df_localidades_indicadores <- reactive({
-    req(input$id_localidades, input$id_visualizar, input$id_tema, input$id_anio)
-    
+    # req(input$id_localidades, input$id_visualizar, input$id_tema, input$id_anio)
+    req(clave_indicador(), input$id_localidades)
     # Extraigo la clave del indicador (cve_ind) de df_indicadores según el
     # id del indicador seleccionado
     
@@ -328,9 +370,32 @@ server <- function(input, output, session) {
     # Renderiza la tabla para mostrar al usuario
     output$data_table <- renderTable(tabla_para_mostrar)
   })
-  ### Inicia evento para mostrar el checkboxgroup del índice y nivel de los temás
   ### Fin botón de visualización de datos
   
+  
+  es_mostrar_tabla_botones <- reactive({
+    (input$id_indicadores |> isTruthy() | 
+                                 input$id_variables |> isTruthy()) & 
+    input$id_localidades |> isTruthy()
+  })
+  
+  observeEvent(es_mostrar_tabla_botones(), {
+    shinyjs::hide("id_descargar")
+    shinyjs::hide("downloadPlot")
+    
+    if(es_mostrar_tabla_botones()) {
+      shinyjs::show("id_descargar")
+      shinyjs::show("downloadPlot")
+    }
+  })
+  
+  observe({
+    shinyjs::hide("data_table")
+
+    if(es_mostrar_tabla_botones) {
+      shinyjs::show("data_table")
+    }
+  })
   ### Inicio proceso de descarga de datos
   output$id_descargar <- downloadHandler(
     filename = function() {
