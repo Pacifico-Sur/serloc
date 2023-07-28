@@ -207,16 +207,19 @@ server <- function(input, output, session) {
       }
   })
   
-  ### Inicio evento para seleccionar los indicadores de índice y nivel
+  ### Inicia evento para extraer la tabla descriptora de indicadores
   df_indicadores <- reactive({
     # Requiere el tema y el año para hacer la consulta
     req(input$id_tema, input$id_anio)
     
     if (input$id_tema != 10) {
-      query_indicadores <- paste0("SELECT * FROM catalogo.indicadores
-                          WHERE cve_sub = (SELECT cve_sub FROM catalogo.subtema
-                                          WHERE cve_tem = ", input$id_tema, " and
-                                          anio = ", input$id_anio, ");")
+      query_indicadores <- paste0(
+        "SELECT *
+        FROM catalogo.indicadores
+        WHERE cve_sub = (SELECT cve_sub
+                        FROM catalogo.subtema
+                        WHERE cve_tem = ", input$id_tema, " AND
+                        anio = ", input$id_anio, ");")
     } else {
       query_indicadores <- paste0(
       "SELECT *
@@ -234,37 +237,36 @@ server <- function(input, output, session) {
 
   })
   
+  ### Inicia evento para crear los indicadores de índice y nivel
+  lista_indice_nivel <- reactive({
+    es_indice_nivel <- df_indicadores() |>
+      pull(cve_ind) |>
+      stringr::str_ends(c("01|2"))
+    
+    lista_indice_nivel <- df_indicadores()[es_indice_nivel, ]# |>
+      # select(id, indicadores)
+    lista_indice_nivel <- setNames(
+      as.list(lista_indice_nivel$id), lista_indice_nivel$indicadores)
+  })
+  
   output$indicadorInputUI <- renderUI({
-    req(df_indicadores())
-    
-    # Extraigo el id del subtema y el nombre del indicador para que sea 
-    # key-value en el checkgroup
-    lista_indicadores <- df_indicadores() |>
-      select(id, indicadores)
-    # Convierte en lista de key-value
-    lista_indicadores <- setNames(
-      as.list(lista_indicadores$id), lista_indicadores$indicadores)
-    
     
     checkboxGroupInput(inputId = "id_indicadores", 
                        label = "Indicadores",
-                       choices = lista_indicadores,
+                       choices = lista_indice_nivel(),
                        selected = 1)
-    
   })
   ###
   
-  indicadores_seleccionados <- reactive({
-    req(input$id_indicadores)
-    df_indicadores <- input$id_indicadores
-  })
-  
   clave_indicador <- reactive({
     df_indicadores() |>
-      filter(id %in% indicadores_seleccionados()) |>
+      filter(id %in% input$id_indicadores) |>
       pull(cve_ind) |>
       toupper()
   })
+  
+  
+  
   
   ### Inicio botón de visualización de datos
   df_localidades_indicadores <- reactive({
@@ -309,6 +311,9 @@ server <- function(input, output, session) {
                               statement = query_indicadores)
   })
   
+  
+  
+  ### Inicia evento para mostrar el checkboxgroup del índice y nivel de los temás
   observeEvent(df_localidades_indicadores(), {
     
     # Extrae los nombres de los indicadores usando la clave del indicador
@@ -324,6 +329,7 @@ server <- function(input, output, session) {
     # Renderiza la tabla para mostrar al usuario
     output$data_table <- renderTable(tabla_para_mostrar)
   })
+  ### Inicia evento para mostrar el checkboxgroup del índice y nivel de los temás
   ### Fin botón de visualización de datos
   
   ### Inicio proceso de descarga de datos
