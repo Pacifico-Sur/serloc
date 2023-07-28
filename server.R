@@ -259,20 +259,24 @@ server <- function(input, output, session) {
     df_indicadores <- input$id_indicadores
   })
   
+  clave_indicador <- reactive({
+    df_indicadores() |>
+      filter(id %in% indicadores_seleccionados()) |>
+      pull(cve_ind) |>
+      toupper()
+  })
+  
   ### Inicio botón de visualización de datos
   df_localidades_indicadores <- reactive({
     req(input$id_localidades, input$id_visualizar, input$id_tema, input$id_anio)
     
     # Extraigo la clave del indicador (cve_ind) de df_indicadores según el
     # id del indicador seleccionado
-    clave_indicador <- df_indicadores() |>
-      filter(id %in% indicadores_seleccionados()) |>
-      pull(cve_ind) |>
-      toupper()
+    
     
     # Separa las claves de indicadores con comas y las pone entre comillas para 
     # usarlas de manera fácil en el query
-    clave_indicadores <- paste("a.", dQuote(clave_indicador, FALSE), collapse=",")
+    clave_indicadores <- paste("a.", dQuote(clave_indicador(), FALSE), collapse=",")
     
     # Extrae los indicadores según el estado, municipio, localidad, tema, 
     # subtema (se es el caso), año e indicadores seleccionados
@@ -307,15 +311,9 @@ server <- function(input, output, session) {
   
   observeEvent(df_localidades_indicadores(), {
     
-    # Extrae la clave de los indicadores seleccionados
-    clave_indicador <- df_indicadores() |>
-      filter(id %in% indicadores_seleccionados()) |>
-      pull(cve_ind) |>
-      toupper()
-    
     # Extrae los nombres de los indicadores usando la clave del indicador
     indicadores_nombre_largo <- df_indicadores() |>
-      filter(cve_ind %in% clave_indicador) |> pull(indicadores)
+      filter(cve_ind %in% clave_indicador()) |> pull(indicadores)
     
     # Crea un vector para cambiar los nombres de los atributos de la tabla 
     # que se muestra al usuario en la aplicación
