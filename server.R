@@ -392,7 +392,7 @@ server <- function(input, output, session) {
   observe({
     shinyjs::hide("data_table")
 
-    if(es_mostrar_tabla_botones) {
+    if(es_mostrar_tabla_botones()) {
       shinyjs::show("data_table")
     }
   })
