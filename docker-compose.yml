@@ -28,7 +28,7 @@ services:
       - $PWD:/app
     network_mode: database_database_network
     ports: 
-      - "3737:4040"
+      - "8000:4040"
       
 volumes:
   app:
