@@ -1,0 +1,114 @@
+<!DOCTYPE html> 
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <style>
+	
+            .panel_encabezado {     
+            margin: 1px 1px;
+            width: 100%;	
+	        height:auto;
+            padding: auto auto;
+            display: inline;
+            max-width: 80%;
+            }           
+
+            .panel_diagrama {     
+            color: #fff;
+            margin: 10px auto;
+            background-color: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 80%;
+            height: fit-content;
+            border-radius: 15px;
+            padding: 1px;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            align-content: center;
+            max-width: auto auto;
+            }
+
+
+            body {
+            background:url('multimedia/imagen_fondo.jpg') no-repeat center center fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+            text-align: center;
+            font-family: 'Open Sans', sans-serif;
+            background-attachment: fixed;
+            
+            }
+
+            h1 {
+            font-family: 'Montserrat', sans-serif;
+            text-decoration: none;
+            color: #fff;
+            /*padding-top: 60px;*/
+            color: rgba(255,255,255,0.8);
+            font-size: 30px;
+            text-align:center;
+            align-items: center;
+            }
+
+            /* esquema y fondo responsivo */
+            .esquema {
+                max-width:100%;
+                max-height:100%;
+            }
+
+            .div {
+                max-width:85%;
+                max-height:85%;
+                position: fixed;
+            }
+
+        </style>   
+    </head>
+    <body>
+
+ <!-- logo con liga y titulo  -->       
+	<div class="panel_encabezado">
+            <a href="https://www.centrogeo.org.mx/" target="_blank"> <img class="logo" src="./multimedia/Logo_conacyt-cgeo.png" width="500" height="auto" > </a> 
+            <h1>SERVICIO DE INFORMACIÓN Y CONOCIMIENTO <br>DE VULNERABILIDAD EN LOCALIDADES RURALES Y SU ENTORNO TERRITORIAL</h1>
+    </div>
+
+<!-- coordenadas del esquema y rutas para el image map -->
+        <div class="panel_diagrama">
+            <img class="esquema" src="./multimedia/diagrama.png" usemap="#image-map"> 
+            <map name="image-map">
+
+                    <!-- ligas a videos -->
+                    <area target="_blank" alt="video_general" title="¡Haz click aqui!" href="https://www.youtube.com/watch?v=YWUAR1QPYpc" coords="2170,1254,6998,2703" shape="rect" data-toggle="modal" data-target="#exampleModalCenter">
+                    <area target="_blank" alt="video_localidades" title="¡Haz click aqui!" href="https://www.youtube.com/watch?v=KQKv4jMmcpQ" coords="1952,14985,1091" shape="circle" data-toggle="modal" data-target="#exampleModalCenter">
+                    <area target="_blank" alt="video_territoriotenencia" title="¡Haz click aqui!" href="https://www.youtube.com/watch?v=SaQdOJtIwQE" coords="5950,15085,1138" shape="circle" shape="circle" data-toggle="modal" data-target="#exampleModalCenter">
+                    <!-- ligas a los formularios -->
+                    <area target="_blank" alt="consulta_localidades" title="¡Haz click aqui!" href="http://localhost:8000/" coords="1096,10818,3176,11441" shape="rect" data-toggle="modal" data-target="#exampleModalCenter">
+                    <area target="_blank" alt="consulta_territorio" title="¡Haz click aqui!" href="http://localhost:8000/" coords="4933,10796,7021,11426" shape="rect" data-toggle="modal" data-target="#exampleModalCenter">
+                    <!-- ligas a la documentacion -->
+                    <area target="_blank" alt="alcances" title="¡Haz click aqui!" href="https://www.google.com/" coords="203,17004,3041,17627" shape="rect"  data-toggle="modal" data-target="#exampleModalCenter">
+                    <area target="_blank" alt="documentacion" title="¡Haz click aqui!" href="https://www.google.com/" coords="6112,16989,8327,17702" shape="rect"  data-toggle="modal" data-target="#exampleModalCenter">           
+            </map>          
+
+
+        </div>
+        
+         <!-- api folder java de image map -->
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="./jQuery-rwdImageMaps-master/jquery.rwdImageMaps.min.js"></script>
+
+        <!-- image map responsive -->
+        <script>
+        $(document).ready(function(e) {
+            $('img[usemap]').rwdImageMaps();
+            
+            $('area').on('click', function() {
+                /* alert($(this).attr('alt') + ' clicked'); */
+            });
+        });
+        </script>
+    </body>
+
+</html>
