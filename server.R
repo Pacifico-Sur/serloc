@@ -222,7 +222,7 @@ server <- function(input, output, session) {
     req(input$id_tema, input$id_anio)
     
     if (input$id_tema != 10) {
-      query_indicadores <- paste0(
+      query <- paste0(
         "SELECT *
         FROM catalogo.indicadores
         WHERE cve_sub = (SELECT cve_sub
@@ -232,9 +232,9 @@ server <- function(input, output, session) {
     }
   })
   
-  query_variables <- reactive({
+  query_des_loc_variables <- reactive({
     req(input$id_subtema)
-    query_indicadores <- paste0(
+    query <- paste0(
       "SELECT *
       FROM catalogo.des_soc_indicadores
       WHERE cve_sub =
@@ -244,14 +244,15 @@ server <- function(input, output, session) {
   })
   
   df_indicadores_variables <- reactive({
+    req(input$id_tema)
     # Extrae la tabla de indicadores para el tema y el año. El año lo ocupo para
     # poder extraer las claves de los indicadores de ese año
     if (query_indicadores() |> isTruthy()) {
       tbl_indicadores <- ipa::db_get_table(conn = conexion,
                                            statement = query_indicadores())
-    } else if (query_variables() |> isTruthy()) {
+    } else if (query_des_loc_variables() |> isTruthy()) {
       tbl_indicadores <- ipa::db_get_table(conn = conexion,
-                                           statement = query_variables())
+                                           statement = query_des_loc_variables())
     }
     
   })
@@ -262,18 +263,62 @@ server <- function(input, output, session) {
       pull(cve_ind) |>
       stringr::str_ends(c("01|2"))
     
-    lista_indice_nivel <- df_indicadores_variables()[es_indice_nivel, ]
-    lista_indice_nivel <- setNames(
-      as.list(lista_indice_nivel$id), lista_indice_nivel$indicadores)
+    lista_indicadores <- df_indicadores_variables()[es_indice_nivel, ]
+    lista_indicadores <- setNames(
+      as.list(lista_indicadores$id), lista_indicadores$indicadores)
   })
   
-  output$indicadorInputUI <- renderUI({
+  ### Inicia evento para crear checkboxgroup de las variables
+  lista_variables <- reactive({
+    es_indice_nivel <- df_indicadores_variables() |>
+      pull(cve_ind) |>
+      stringr::str_ends(c("01|2"))
     
-    checkboxGroupInput(inputId = "id_indicadores", 
-                       label = "Indicadores",
-                       choices = lista_indice_nivel())
+    lista_indicadores <- df_indicadores_variables()[!es_indice_nivel, ]
+    lista_indicadores <- setNames(
+      as.list(lista_indicadores$id), lista_indicadores$indicadores)
   })
-  ### Fin evento para crear checkboxgroup de los indicadores de índice y nivel
+  
+  ### Inicia evento para crear checkboxgroup de las variables del tema de 
+  # Desarrollo Social
+  lista_des_soc_variables <- reactive({
+    lista_indicadores <- setNames(
+      as.list(df_indicadores_variables()$id), df_indicadores_variables()$indicadores)
+  })
+  
+  observeEvent(input$id_tema, {
+    if (input$id_tema == 10) {
+      output$variablesDesLocInputUI <- renderUI({
+        
+        checkboxGroupInput(inputId = "id_des_loc_variables", 
+                           label = "Variables",
+                           choices = lista_des_soc_variables())
+      })
+      
+      output$indicadorInputUI <- renderUI(NULL)
+      
+      output$variablesInputUI <- renderUI(NULL)
+      
+    } else {
+      output$indicadorInputUI <- renderUI({
+        
+        checkboxGroupInput(inputId = "id_indicadores", 
+                           label = "Indicadores",
+                           choices = lista_indice_nivel())
+      })
+      ### Fin evento para crear checkboxgroup de los indicadores de índice y nivel
+      
+      output$variablesInputUI <- renderUI({
+        
+        checkboxGroupInput(inputId = "id_variables", 
+                           label = "Variables",
+                           choices = lista_variables(),
+                           selected = 1)
+      })
+      ### Inicia evento para crear checkboxgroup de las variables
+    }
+  })
+  
   
   observeEvent(input$id_indicadores, {
     if (input$id_indicadores |> isTruthy()) {
@@ -291,26 +336,6 @@ server <- function(input, output, session) {
     }
   }, ignoreNULL = FALSE)
   
-  ### Inicia evento para crear checkboxgroup de las variables
-  lista_variables <- reactive({
-    es_indice_nivel <- df_indicadores_variables() |>
-      pull(cve_ind) |>
-      stringr::str_ends(c("01|2"))
-    
-    lista_indice_nivel <- df_indicadores_variables()[!es_indice_nivel, ]
-    lista_indice_nivel <- setNames(
-      as.list(lista_indice_nivel$id), lista_indice_nivel$indicadores)
-  })
-  
-  output$variablesInputUI <- renderUI({
-    
-    checkboxGroupInput(inputId = "id_variables", 
-                       label = "Variables",
-                       choices = lista_variables(),
-                       selected = 1)
-  })
-  ### Inicia evento para crear checkboxgroup de las variables
-  
   clave_indicador <- reactive({
     if (input$id_indicadores |> isTruthy()) {
       df_indicadores_variables() |>
@@ -320,6 +345,11 @@ server <- function(input, output, session) {
     } else if (input$id_variables |> isTruthy()) {
       df_indicadores_variables() |>
         filter(id %in% input$id_variables) |>
+        pull(cve_ind) |>
+        toupper()
+    } else if (input$id_des_loc_variables |> isTruthy()) {
+      df_indicadores_variables() |>
+        filter(id %in% input$id_des_loc_variables) |>
         pull(cve_ind) |>
         toupper()
     }
@@ -393,8 +423,9 @@ server <- function(input, output, session) {
   
   
   es_mostrar_tabla_botones <- reactive({
-    (input$id_indicadores |> isTruthy() | 
-                                 input$id_variables |> isTruthy()) & 
+    (input$id_indicadores |> isTruthy() |
+       input$id_variables |> isTruthy() |
+       input$id_des_loc_variables |> isTruthy()) & 
     input$id_localidades |> isTruthy()
   })
   
