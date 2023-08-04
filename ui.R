@@ -53,6 +53,8 @@ ui <- fluidPage(
             uiOutput(outputId = "indicadorInputUI"),
             # Checkbox de variables
             uiOutput(outputId = "variablesInputUI"),
+            # Checkbox de variables de desarrollo local
+            uiOutput(outputId = "variablesDesLocInputUI")
             # Botón para visualizar datos
             # actionButton("id_visualizar", "Ver tabla de datos")
           ),
