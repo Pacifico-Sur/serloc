@@ -10,7 +10,6 @@
 # repositorio database (https://github.com/Pacifico-Sur/database)
 # library(ipa)
 library(ggplot2)
-library(magrittr)
 
 mapa_municipio_localidades <- function(id_mun = 1458) {
   con <- DBI::dbConnect(RPostgres::Postgres(), dbname = "siclr_db",
@@ -56,20 +55,13 @@ mapa_municipio_localidades <- function(id_mun = 1458) {
     map_type = "streets",
     map_res = 0.75)
   
-  # Llama la función png para inicializar el gráfico
-  # save_path <- "../temp-img/"
-  # dir.create(save_path)
-  # El directorio para guardar el archivo
-  # png(file = paste0(save_path, "mi_mapa.png"),
-  #     width = 30, # The width of the plot in cm
-  #     height = 27, # The height of the plot in cm
-  #     units = "cm",  # The units to save the plot
-  #     res = 100)
-  
   # Crea la gráfica con el diseño necesario
+  muni_transform <- municipio |>
+    st_transform(crs = st_crs(3857))
+  print(muni_transform)
   mymap <- ggplot() +
     basemaps::basemap_gglayer(municipio) +
-    geom_sf(data = municipio %>% st_transform(crs = st_crs(3857)),
+    geom_sf(data = muni_transform,
             fill = "blue", alpha = 0.030, colour = "black") +
     geom_sf(data = loc_puntos) +
     geom_sf(data = loc_poli,
@@ -91,6 +83,5 @@ mapa_municipio_localidades <- function(id_mun = 1458) {
           plot.caption = element_text(size = 6))
   
   # Cierra la gráfica que se guardó
-  # dev.off()
   return(mymap)
 }
