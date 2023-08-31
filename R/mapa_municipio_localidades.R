@@ -58,7 +58,7 @@ mapa_municipio_localidades <- function(id_mun = 1458) {
   # Crea la gráfica con el diseño necesario
   muni_transform <- municipio |>
     st_transform(crs = st_crs(3857))
-  print(muni_transform)
+
   mymap <- ggplot() +
     basemaps::basemap_gglayer(municipio) +
     geom_sf(data = muni_transform,
