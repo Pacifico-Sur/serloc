@@ -431,10 +431,12 @@ server <- function(input, output, session) {
   
   observeEvent(es_mostrar_tabla_botones(), {
     shinyjs::hide("id_descargar")
+    shinyjs::hide("descargarDescriptor")
     shinyjs::hide("downloadPlot")
     
     if(es_mostrar_tabla_botones()) {
       shinyjs::show("id_descargar")
+      shinyjs::show("descargarDescriptor")
       shinyjs::show("downloadPlot")
     }
   })
