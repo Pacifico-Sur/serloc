@@ -1,0 +1,18 @@
+---
+title: "Descriptor de datos"
+output: pdf_document
+date: ""
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, echo=FALSE}
+nemonicos <- c("FCB_0201", "FCB_0202")
+descripcion <- c("Índice de carencia de bienes y medios de comunicación, 2010",
+                 "Nivel de carencia de bienes y medios de comunicación, 2010")
+df <- data.frame(nemonico = nemonicos, descripcion = descripcion)
+
+df |> knitr::kable()
+```
