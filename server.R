@@ -1,3 +1,5 @@
+source("./R/mapa_municipio_localidades.R")
+
 # Conecta con la base de datos del servicio de localidades
 conexion <- ipa::db_connect(dbname = "siclr_db",
                             host = "database")
@@ -152,6 +154,30 @@ server <- function(input, output, session) {
                       selected = NULL)
   })
   ### Fin evento para llenar la lista de localidades según el municipio seleccionado
+  
+  ### Inicio evento para llenar la lista de núcleos agrarios según el municipio seleccionado
+  observe({
+    req(input$id_ps_municipio)
+    
+    # Extrae de la BD los municipios del estado seleccionado
+    query_na <- paste("SELECT * FROM public.na WHERE ",
+                               "\"ID_MUN\"", " = ", input$id_ps_municipio, ";")
+    nucleo_agrario <- ipa::db_get_table(conn = conexion,
+                                     statement = query_na)
+    nucleo_agrario <- nucleo_agrario |>
+      as_tibble() |>
+      select(id_na, nom_nucleo) |>
+      arrange(nom_nucleo)
+    
+    nucleo_agrario <- setNames(as.list(nucleo_agrario$id_na), nucleo_agrario$nom_nucleo)
+    
+    # Actualiza selectInput de id_localidades
+    updateSelectInput(session, "id_ejido",
+                      label = "Ejido o comunidad",
+                      choices = nucleo_agrario,
+                      selected = NULL)
+  })
+  ### Fin evento para llenar la lista de núcleos agrarios según el municipio seleccionado
   
   ### Inicia evento para llenar lista de selección de temas
   observe({
