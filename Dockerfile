@@ -3,7 +3,8 @@ LABEL maintainer="USER <david.martinez@macer.tech>"
 
 # Incluye los drivers para conectarse con la base de datos de PostgreSQL
 RUN apt-get update && \
-    apt-get install --yes libpq-dev
+    apt-get upgrade --yes
+RUN apt-get install --yes libpq-dev
 
 # Librerías para manejo de datos espaciales
 RUN apt-get install --yes \
@@ -16,9 +17,8 @@ RUN apt-get install --yes \
     libproj-dev \
     # Librería para poder instalar en R el paquete basemaps
     libmagick++-dev
-
-# Instalar Tinytex
-RUN wget -qO- "https://yihui.org/tinytex/install-bin-unix.sh" | sh
+# Instala LaTeX para renderizar PDF en R
+RUN apt-get install --yes texlive-latex-extra
 
 # Instala librerías necesarias para trabajar con datos espaciales y bases de datos en PostgreSQL
 RUN R -e "install.packages(c('DBI', 'ggplot2', 'RPostgres', 'remotes', 'basemaps', 'shinyjs'), dependencies = TRUE)"
