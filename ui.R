@@ -13,7 +13,7 @@ source("./R/mapa_municipio_localidades.R")
 ### Define las variables de entrada para las listas desplegables
 # Tipo de consulta
 tipo_consulta <- list("Selecciona una opción de consulta" = "null",
-                      "Localidades" = "id_loc")
+                      "Localidades" = "id_loc", "Propiedad Social" = "id_ps")
 ###
 
 # Define la interfaz de usuario
