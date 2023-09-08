@@ -1,0 +1,7 @@
+---
+title: "Infografía Propiedad Social"
+output: pdf_document
+date: "2023-09-08"
+---
+
+# Esta es la infografía para Propiedad Social
