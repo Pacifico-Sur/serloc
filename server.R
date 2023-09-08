@@ -166,10 +166,11 @@ server <- function(input, output, session) {
                                      statement = query_na)
     nucleo_agrario <- nucleo_agrario |>
       as_tibble() |>
-      select(id_na, nom_nucleo) |>
+      select(id_na, nom_nucleo, tipo) |>
       arrange(nom_nucleo)
     
-    nucleo_agrario <- setNames(as.list(nucleo_agrario$id_na), nucleo_agrario$nom_nucleo)
+    nucleo_agrario <- setNames(as.list(nucleo_agrario$id_na),
+                               paste(nucleo_agrario$nom_nucleo, nucleo_agrario$tipo))
     
     # Actualiza selectInput de id_localidades
     updateSelectInput(session, "id_ejido",
