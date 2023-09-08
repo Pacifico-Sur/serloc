@@ -180,6 +180,29 @@ server <- function(input, output, session) {
   })
   ### Fin evento para llenar la lista de núcleos agrarios según el municipio seleccionado
   
+  output$id_ps_infografia <- downloadHandler(
+    # Nombre del archivo que se va a guardar
+    filename = "infografia_propiedad_social.pdf",
+    content = function(file) {
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempInfografia <- file.path(tempdir(), "infografia.Rmd")
+      file.copy("./docs/infografia_ps.Rmd", tempInfografia, overwrite = TRUE)
+      
+      # Set up parameters to pass to Rmd document
+      # params <- list(n = input$slider)
+      
+      # Knit the document, passing in the `params` list, and eval it in a
+      # child of the global environment (this isolates the code in the document
+      # from the code in this app).
+      rmarkdown::render(tempInfografia, output_file = file,
+                        # params = params,
+                        envir = new.env(parent = globalenv())
+      )
+    }
+  )
+  
   ### Inicia evento para llenar lista de selección de temas
   observe({
     
