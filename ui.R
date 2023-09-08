@@ -120,7 +120,7 @@ ui <- fluidPage(
                              "2020" = 2020)
             ),
             # Botón para ver la infografía
-            actionButton("id_ps_infografia", "Ver ficha infográfica del ejido o comunidad")
+            downloadButton("id_ps_infografia", "Ver ficha infográfica del ejido o comunidad")
           ),
           ### Fin panel para mostrar los elementos para propiedad social
           
