@@ -512,6 +512,33 @@ server <- function(input, output, session) {
   ### Fin proceso de descarga de datos
   
   ### Inicia proceso de descarga de descriptor de datos
+  ### Inicio consulta para extraer tabla de descriptor de datos
+  df_descriptor <- reactive({
+    req(clave_indicador())
+    
+    # Separa las claves de indicadores con comas y las pone entre comillas para 
+    # usarlas de manera fácil en el query
+    clave_indicadores <- paste(sQuote(clave_indicador(), FALSE), collapse=",")
+    
+    # Si el tema es distinto de Aspectos cualitativos de vulnerabilidad accede 
+    # a la tabla de vulnerabilidad de localidades rurales
+    if (input$id_tema != 10) {
+      query_indicadores <- paste0(
+        "SELECT * FROM catalogo.indicadores 
+        WHERE cve_ind in (", clave_indicadores, ");")
+    } else {
+      query_indicadores <- paste0(
+        "SELECT * FROM catalogo.des_soc_indicadores
+        WHERE cve_ind in (", clave_indicadores, ");")
+    }
+    
+    indi <- ipa::db_get_table(conn = conexion,
+                              statement = query_indicadores)
+    indi <- indi |>
+      select(cve_ind, indicadores)
+  })
+  ### Fin consulta para extraer tabla de descriptor de datos
+  
   output$descargarDescriptor <- downloadHandler(
     # Nombre del archivo que se va a guardar
     filename = "descriptor_datos.pdf",
@@ -523,13 +550,13 @@ server <- function(input, output, session) {
       file.copy("./docs/report.Rmd", tempReport, overwrite = TRUE)
       
       # Set up parameters to pass to Rmd document
-      # params <- list(n = input$slider)
+      params <- list(df_localidades = df_descriptor())
       
       # Knit the document, passing in the `params` list, and eval it in a
       # child of the global environment (this isolates the code in the document
       # from the code in this app).
       rmarkdown::render(tempReport, output_file = file,
-                        # params = params,
+                        params = params,
                         envir = new.env(parent = globalenv())
       )
     }
