@@ -431,20 +431,40 @@ server <- function(input, output, session) {
       tabla_localidades_bd <- paste0("ivp.loc_rur_", input$id_anio)
       
       query_indicadores <- paste0(
-        "select b.\"NOM_LOC\" as \"Localidad\",", clave_indicadores, 
-        " FROM ", tabla_localidades_bd, " as a ",
+        "SELECT 
+          c.\"NOMGEO\" as estado,
+          d.\"NOMGEO\" as municipio,
+          b.\"NOM_LOC\" as \"Localidad\",
+          b.\"CGLOC\", ",
+          clave_indicadores, 
+        "FROM ", tabla_localidades_bd, " as a ",
         "INNER JOIN loc.localidades as b ",
           "ON a.\"CGLOC\" = b.\"CGLOC\" AND ",
-          "b.\"ID_LOC\" in (", localidades_seleccionadas, ");")
+          "b.\"ID_LOC\" in (", localidades_seleccionadas, ")",
+        "INNER JOIN edo_mun.estados as c
+         ON c.\"ID_ENT\" = ", input$id_estado,
+        "INNER JOIN edo_mun.municipios as d
+         ON d.\"ID_MUN\" = ", input$id_municipio,
+        "ORDER BY \"Localidad\";")
     } else {
       tabla_localidades_bd <- "ivp.des_local_2020"
       
       query_indicadores <- paste0(
-        "select b.\"NOM_LOC\" as \"Localidad\",", clave_indicadores, 
-        " FROM ", tabla_localidades_bd, " as a ",
+        "SELECT
+            c.\"NOMGEO\" as estado,
+            d.\"NOMGEO\" as municipio,
+            b.\"NOM_LOC\" as \"Localidad\",
+            b.\"CGLOC\", ",
+            clave_indicadores, 
+        "FROM ", tabla_localidades_bd, " as a ",
         "INNER JOIN loc.localidades as b ",
         "ON a.\"CGLOC\" = b.\"CGLOC\" AND ",
-        "b.\"ID_LOC\" in (", localidades_seleccionadas, ");")
+            "b.\"ID_LOC\" in (", localidades_seleccionadas, ")",
+        "INNER JOIN edo_mun.estados as c
+         ON c.\"ID_ENT\" = ", input$id_estado,
+        "INNER JOIN edo_mun.municipios as d
+         ON d.\"ID_MUN\" = ", input$id_municipio,
+        "ORDER BY \"Localidad\";")
     }
     
     indi <- ipa::db_get_table(conn = conexion,
@@ -462,7 +482,8 @@ server <- function(input, output, session) {
     
     # Crea un vector para cambiar los nombres de los atributos de la tabla 
     # que se muestra al usuario en la aplicación
-    tabla_para_mostrar <- df_localidades_indicadores()
+    tabla_para_mostrar <- df_localidades_indicadores() |>
+      select(-c(estado, municipio, cgloc))
     indicadores_nombre_largo <- c("Localidad", indicadores_nombre_largo)
     colnames(tabla_para_mostrar) <- indicadores_nombre_largo
     
