@@ -83,9 +83,7 @@ ui <- fluidPage(
               selected = '',
               choices = list("2010" = 2010,
                              "2020" = 2020)
-            ),
-            # Botón para ver la infografía
-            actionButton("id_mun_infografia", "Ver ficha infográfica del municipio")
+            )
           ),
           ### Fin panel para mostrar los elementos para municipio
           
@@ -120,7 +118,9 @@ ui <- fluidPage(
                              "2020" = 2020)
             ),
             # Botón para ver la infografía
-            downloadButton("id_ps_infografia", "Ver ficha infográfica del ejido o comunidad")
+            downloadButton(
+              "id_ps_infografia", "Ver ficha infográfica del ejido o comunidad"
+            )
           ),
           ### Fin panel para mostrar los elementos para propiedad social
           
@@ -167,7 +167,11 @@ ui <- fluidPage(
           downloadButton(
             outputId = "downloadPlot",
             label = "Descargar mapa del municipio"
-          )
+          ),
+          
+          htmlOutput("filetable1"),
+          htmlOutput("filetable2"),
+          htmlOutput("filetable3")
         )
     )
 )
