@@ -28,8 +28,8 @@ RUN R -e "remotes::install_gitlab('davidmacer/ipa@develop')"
 # Difine app/ como el directorio de trabajo dentro del contenedor
 WORKDIR /app 
 # Copia los archivos que están dentro de /serloc-app al directorio de trabajo
-COPY ui.R /app/
-COPY server.R /app/
+COPY ui.R .
+COPY server.R .
 COPY www/* /srv/shiny-server/
 # Otorga todos los permisos al workdir 
 RUN chmod -R 777 .
