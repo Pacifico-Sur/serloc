@@ -1,3 +1,4 @@
+if (!require("ipa")) install.packages("remotes::install_gitlab('davidmacer/ipa@develop')")
 source("./R/mapa_municipio_localidades.R")
 
 # Conecta con la base de datos del servicio de localidades
@@ -37,8 +38,8 @@ server <- function(input, output, session) {
   })
   ### Fin
   
+  ### Inicia módulo para Propiedad Social
   ### Inicia evento para llenar la lista de municipios según el estado seleccionado
-  ### en el tipo de consulta 'Propiedad social'
   observeEvent(input$id_ps_estado, {
     
     # Extrae de la BD los municipios del estado seleccionado
@@ -66,7 +67,89 @@ server <- function(input, output, session) {
     
   })
   ###
-  ### Fin
+  ### Finaliza evento para llenar la lista de municipios según el estado seleccionado
+  
+  ### Inicio evento para llenar la lista de núcleos agrarios según el municipio seleccionado
+  observe({
+    req(input$id_ps_municipio)
+    
+    # Extrae de la BD los municipios del estado seleccionado
+    query_na <- paste("SELECT * FROM public.na WHERE ",
+                      "\"ID_MUN\"", " = ", input$id_ps_municipio, ";")
+    nucleo_agrario <- ipa::db_get_table(conn = conexion,
+                                        statement = query_na)
+    nucleo_agrario <- nucleo_agrario |>
+      as_tibble() |>
+      select(id_na, nom_nucleo, tipo) |>
+      arrange(nom_nucleo)
+    
+    nucleo_agrario <- setNames(as.list(as.numeric(nucleo_agrario$id_na)),
+                               paste(nucleo_agrario$nom_nucleo, nucleo_agrario$tipo))
+    
+    # Actualiza selectInput de id_localidades
+    updateSelectInput(session, "id_ejido",
+                      label = "Ejido o comunidad",
+                      choices = nucleo_agrario,
+                      selected = NULL)
+  })
+  ### Finaliza evento para llenar la lista de núcleos agrarios según el municipio seleccionado
+  
+  ### Inicia evento para la consulta a la BD de los indicadores de propiedad social
+  # Crea el query para realizar el llamado a la BD
+  query_propiedad_social <- reactive({
+    # Requiere el tema y el año para hacer la consulta
+    req(input$id_ejido)
+    
+    query <- paste0(
+    "SELECT *
+      FROM ivp.na_", input$id_ps_anio,
+      " WHERE \"ID_NA\" = ", input$id_ejido, ";")
+  })
+  
+  # Haz el llamado a la BD para obtener los indicadores de propiedad social
+  propiedad_social_indicadores <- reactive({
+    df <- ipa::db_get_table(conn = conexion,
+                            statement = query_propiedad_social())
+  })
+  
+  query_prop_social_catalogo <- reactive({
+    # Extrae el catálogo de indicadores para relacionar las claves con la descripción
+    query <- paste0(
+      "SELECT *
+      FROM catalogo.indicadores;")
+  })
+  
+  # Haz el llamado a la BD para obtener la descripción de los indicadores
+  propiedad_social_catalogo <- reactive({
+    df <- ipa::db_get_table(conn = conexion,
+                            statement = query_prop_social_catalogo())
+  })
+  ### Finaliza evento para la consulta a la BD de los indicadores de propiedad social
+  
+  output$id_ps_infografia <- downloadHandler(
+    # Nombre del archivo que se va a guardar
+    filename = "infografia_propiedad_social.pdf",
+    content = function(file) {
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempInfografia <- file.path(tempdir(), "infografia.Rmd")
+      file.copy("./docs/infografia_ps.Rmd", tempInfografia, overwrite = TRUE)
+      
+      # Set up parameters to pass to Rmd document
+      params <- list(df_propiedad_social = propiedad_social_indicadores(),
+                     df_ps_catalogo = propiedad_social_catalogo())
+      
+      # Knit the document, passing in the `params` list, and eval it in a
+      # child of the global environment (this isolates the code in the document
+      # from the code in this app).
+      rmarkdown::render(tempInfografia, output_file = file,
+                        params = params,
+                        envir = new.env(parent = globalenv())
+      )
+    }
+  )
+  ### Finaliza módulo para Propiedad Social
   
   ### Inicia evento para llenar la lista de municipios según el estado seleccionado
   ### en el tipo de consulta 'Municipio'
@@ -154,54 +237,6 @@ server <- function(input, output, session) {
                       selected = NULL)
   })
   ### Fin evento para llenar la lista de localidades según el municipio seleccionado
-  
-  ### Inicio evento para llenar la lista de núcleos agrarios según el municipio seleccionado
-  observe({
-    req(input$id_ps_municipio)
-    
-    # Extrae de la BD los municipios del estado seleccionado
-    query_na <- paste("SELECT * FROM public.na WHERE ",
-                               "\"ID_MUN\"", " = ", input$id_ps_municipio, ";")
-    nucleo_agrario <- ipa::db_get_table(conn = conexion,
-                                     statement = query_na)
-    nucleo_agrario <- nucleo_agrario |>
-      as_tibble() |>
-      select(id_na, nom_nucleo, tipo) |>
-      arrange(nom_nucleo)
-    
-    nucleo_agrario <- setNames(as.list(nucleo_agrario$id_na),
-                               paste(nucleo_agrario$nom_nucleo, nucleo_agrario$tipo))
-    
-    # Actualiza selectInput de id_localidades
-    updateSelectInput(session, "id_ejido",
-                      label = "Ejido o comunidad",
-                      choices = nucleo_agrario,
-                      selected = NULL)
-  })
-  ### Fin evento para llenar la lista de núcleos agrarios según el municipio seleccionado
-  
-  output$id_ps_infografia <- downloadHandler(
-    # Nombre del archivo que se va a guardar
-    filename = "infografia_propiedad_social.pdf",
-    content = function(file) {
-      # Copy the report file to a temporary directory before processing it, in
-      # case we don't have write permissions to the current working dir (which
-      # can happen when deployed).
-      tempInfografia <- file.path(tempdir(), "infografia.Rmd")
-      file.copy("./docs/infografia_ps.Rmd", tempInfografia, overwrite = TRUE)
-      
-      # Set up parameters to pass to Rmd document
-      # params <- list(n = input$slider)
-      
-      # Knit the document, passing in the `params` list, and eval it in a
-      # child of the global environment (this isolates the code in the document
-      # from the code in this app).
-      rmarkdown::render(tempInfografia, output_file = file,
-                        # params = params,
-                        envir = new.env(parent = globalenv())
-      )
-    }
-  )
   
   ### Inicia evento para llenar lista de selección de temas
   observe({
