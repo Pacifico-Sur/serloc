@@ -21,7 +21,7 @@ RUN apt-get install --yes \
 RUN apt-get install --yes texlive-latex-extra
 
 # Instala librerías necesarias para trabajar con datos espaciales y bases de datos en PostgreSQL
-RUN R -e "install.packages(c('DBI', 'ggplot2', 'RPostgres', 'remotes', 'basemaps', 'shinyjs'), dependencies = TRUE)"
+RUN R -e "install.packages(c('basemaps', 'DBI', 'ggplot2', 'kableExtra', 'remotes', 'RPostgres', 'shinyjs', 'stringr'), dependencies = TRUE)"
 
 # Instala paquete ipa para el manejo de la BD del servicio
 RUN R -e "remotes::install_gitlab('davidmacer/ipa@develop')"
