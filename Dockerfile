@@ -23,7 +23,7 @@ RUN apt-get install --yes \
     lmodern
     
 # Instala librerías necesarias para trabajar con datos espaciales y bases de datos en PostgreSQL
-RUN R -e "install.packages(c('basemaps', 'DBI', 'ggplot2', 'kableExtra', 'remotes', 'RPostgres', 'shinyjs', 'stringr'), dependencies = TRUE)"
+RUN R -e "install.packages(c('basemaps', 'DBI', 'ggplot2', 'gt', 'kableExtra', 'remotes', 'RPostgres', 'shinyjs', 'stringr'), dependencies = TRUE)"
 
 # Instala paquete ipa para el manejo de la BD del servicio
 RUN R -e "remotes::install_gitlab('davidmacer/ipa@develop')"
