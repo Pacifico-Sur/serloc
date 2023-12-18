@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
 library(dplyr)
 library(kableExtra)
+library(gt)
 ```
 
 ```{r filtra_tema, echo=FALSE, include=FALSE}
@@ -23,105 +24,124 @@ filtra_tema <- function(df_indicadores, df_catalogo, clave_tema) {
     toupper()
 
   catalogo_tema <- df_catalogo |>
-    filter(cve_ind %in% colnames(df_tema))
+    dplyr::filter(cve_ind %in% colnames(df_tema))
+  
+  df_largo <- data.frame(tema = catalogo_tema$indicadores,
+                         valor = df_tema[1,] |> as.character())
+  
+  return(df_largo)
+}
 
-  colnames(df_tema) <- catalogo_tema$indicadores
-
-  df_tema <- df_tema |>
-    t() # Transpone la tabla
-
-  return(df_tema)
+style_table <- function(df_largo, titulo, color) {
+  df_gt <- df_largo |>
+    gt()
+  df_gt |>
+     cols_width(
+    tema ~ px(250)
+    ) |>
+    tab_style( # Color para el título de la tabla
+      style = cell_fill(color = color),
+      locations = cells_title()
+      ) |>
+    tab_style( # Pon en negritas los valores
+      style = cell_text(
+        size = "medium",
+        weight = "bold"),
+      locations = cells_body("valor")
+      ) |>
+    tab_header(
+      title = md(titulo)) |>
+    cols_label(
+      tema = "",
+      valor = ""
+      )
 }
 ```
 
 ```{r carencia, echo=FALSE}
 # Carencia de bienes y medios de comunicación
-# carencia <- params$df_propiedad_social |>
-#   select(contains("fcb"))
-# colnames(carencia) <- colnames(carencia) |>
-#   toupper()
-# 
-# catalogo_carencia <- params$df_ps_catalogo |>
-#   filter(cve_ind %in% colnames(carencia))
-# 
-# colnames(carencia) <- catalogo_carencia$indicadores
-# 
-# # Transpón la tabla
-# carencia <- carencia |>
-#   t()
 carencia <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fcb")
 ```
 
 ```{r indigena, echo=FALSE}
 # Exclusión indígena
-indigena <- params$df_propiedad_social |>
-  select(contains("fpi"))
-colnames(indigena) <- colnames(indigena) |>
-  toupper()
-
-catalogo_indigena <- params$df_ps_catalogo |>
-  filter(cve_ind %in% colnames(indigena))
-
-colnames(indigena) <- catalogo_indigena$indicadores
-
-indigena <- indigena |>
-  t() # Transpone la tabla
+indigena <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fpi")
 ```
 
 ```{r rezago, echo=FALSE}
 # Rezago educativo, carencia de auto e internet
-rezago <- params$df_propiedad_social |>
-  select(contains("fre"))
-colnames(rezago) <- colnames(rezago) |>
-  toupper()
-
-catalogo_rezago <- params$df_ps_catalogo |>
-  filter(cve_ind %in% colnames(rezago))
-
-colnames(rezago) <- catalogo_rezago$indicadores
-
-rezago <- rezago |>
-  t() # Transpone la tabla
+rezago <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fre")
 ```
 
 ```{r piso_tierra, echo=FALSE}
 # Presencia de piso de tierra, carencia de agua y saneamiento
-piso_tierra <- params$df_propiedad_social |>
-  select(contains("fpt")) |>
-  t() # Transpone la tabla
+piso_tierra <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fpt")
 ```
 
 ```{r pob_infantil, echo=FALSE}
 # Presencia de población infantil y en edad dependiente
-pob_infantil <- params$df_propiedad_social |>
-  select(contains("fpp")) |>
-  t() # Transpone la tabla
+pob_infantil <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fpp")
 ```
 
 ```{r analfabetismo, echo=FALSE}
 # Incidencia de analfabetismo
-analfabetismo <- params$df_propiedad_social |>
-  select(contains("fan")) |>
-  t() # Transpone la tabla
+analfabetismo <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fan")
 ```
 
 ```{r pob_edad_avanzada, echo=FALSE}
 # Presencia de población en edad avanzada y población con discapacidad
-pob_edad_avanzada <- params$df_propiedad_social |>
-  select(contains("fad")) |>
-  t() # Transpone la tabla
+pob_edad_avanzada <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fad")
 ```
 
 ```{r pob_inactiva, echo=FALSE}
 # Presencia de población económicamente inactiva
-pob_inactiva <- params$df_propiedad_social |>
-  select(contains("fpe")) |>
-  t() # Transpone la tabla
+pob_inactiva <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fpe")
 ```
 
-```{r, echo=FALSE}
-knitr::kable(list(carencia, indigena))
-knitr::kable(list(rezago, piso_tierra))
-knitr::kable(list(pob_infantil, pob_edad_avanzada))
-knitr::kable(list(analfabetismo, pob_inactiva))
+```{r carencia_gt, echo=FALSE}
+carencia_gt <- style_table(carencia, "CARENCIA DE BIENES Y MEDIOS DE COMUNICACIÓN", "#F4BFBF")
+carencia_gt
+```
+
+```{r indigena_gt, echo=FALSE}
+indigena_gt <- style_table(indigena, "EXCLUSIÓN INDÍGENA", "#D885A3")
+indigena_gt
+```
+
+```{r rezago_gt, echo=FALSE}
+rezago_gt <- style_table(rezago, "REZAGO EDUCATIVO, CARENCIA DE AUTO E INTERNET", "#90C8AC")
+rezago_gt
+```
+
+```{r piso_tierra_gt, echo=FALSE}
+piso_tierra_gt <- style_table(piso_tierra, "PRESENCIA DE PISO DE TIERRA, CARENCIA DE AGUA Y SANEAMIENTO", "#EEC373")
+piso_tierra_gt
+```
+
+```{r pob_infantil_gt, echo=FALSE}
+pob_infantil_gt <- style_table(pob_infantil,
+                               "PRESENCIA DE POBLACIÓN INFANTIL Y EN EDAD DEPENDIENTE",
+                               "#9DAD7F")
+pob_infantil_gt
+```
+
+```{r pob_edad_avanzada_gt, echo=FALSE}
+pob_edad_avanzada_gt <- style_table(pob_edad_avanzada,
+                                    "PRESENCIA DE POBLACIÓN EN EDAD AVANZADA Y POBLACIÓN CON DISCAPACIDAD",
+                                    "#BFA2DB")
+pob_edad_avanzada_gt
+```
+
+```{r analfabetismo_gt, echo=FALSE}
+analfabetismo_gt <- style_table(analfabetismo,
+                                    "INCIDENCIA DE ANALFABETISMO",
+                                    "#99C4C8")
+analfabetismo_gt
+```
+
+```{r pob_inactiva_gt, echo=FALSE}
+pob_inactiva_gt <- style_table(pob_inactiva,
+                                    "PRESENCIA DE POBLACIÓN ECONÓMICAMENTE INACTIVA",
+                                    "#CE97B0")
+pob_inactiva_gt
 ```
