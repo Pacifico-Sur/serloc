@@ -18,8 +18,10 @@ RUN apt-get install --yes \
     # Librería para poder instalar en R el paquete basemaps
     libmagick++-dev
 # Instala LaTeX para renderizar PDF en R
-RUN apt-get install --yes texlive-latex-extra
-
+RUN apt-get install --yes \
+    texlive-latex-extra \
+    lmodern
+    
 # Instala librerías necesarias para trabajar con datos espaciales y bases de datos en PostgreSQL
 RUN R -e "install.packages(c('basemaps', 'DBI', 'ggplot2', 'kableExtra', 'remotes', 'RPostgres', 'shinyjs', 'stringr'), dependencies = TRUE)"
 
