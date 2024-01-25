@@ -117,9 +117,9 @@ ui <- fluidPage(
               choices = list("2010" = 2010,
                              "2020" = 2020)
             ),
-            # Botón para ver la infografía
-            downloadButton(
-              "id_ps_infografia", "Ver ficha infográfica del ejido o comunidad"
+            # Botón para ver la infografía de propiedad social
+            actionButton(
+              "renderInfoPs", "Ver ficha infográfica del ejido o comunidad"
             )
           ),
           ### Fin panel para mostrar los elementos para propiedad social
@@ -169,9 +169,10 @@ ui <- fluidPage(
             label = "Descargar mapa del municipio"
           ),
           
-          htmlOutput("filetable1"),
-          htmlOutput("filetable2"),
-          htmlOutput("filetable3")
+          # Infografía de propiedad social
+          tags$div(id="report-wrapper",
+                   htmlOutput("renderedInfoPs")
+          )
         )
     )
 )

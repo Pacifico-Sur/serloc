@@ -126,29 +126,18 @@ server <- function(input, output, session) {
   })
   ### Finaliza evento para la consulta a la BD de los indicadores de propiedad social
   
-  output$id_ps_infografia <- downloadHandler(
-    # Nombre del archivo que se va a guardar
-    filename = "infografia_propiedad_social.pdf",
-    content = function(file) {
-      # Copy the report file to a temporary directory before processing it, in
-      # case we don't have write permissions to the current working dir (which
-      # can happen when deployed).
-      tempInfografia <- file.path(tempdir(), "infografia.Rmd")
-      file.copy("./docs/infografia_ps.Rmd", tempInfografia, overwrite = TRUE)
-      
+  observeEvent(input$renderInfoPs, {
+    output$renderedInfoPs <- renderUI({
       # Set up parameters to pass to Rmd document
-      params <- list(df_propiedad_social = propiedad_social_indicadores(),
+      parametros <- list(df_propiedad_social = propiedad_social_indicadores(),
                      df_ps_catalogo = propiedad_social_catalogo())
       
-      # Knit the document, passing in the `params` list, and eval it in a
-      # child of the global environment (this isolates the code in the document
-      # from the code in this app).
-      rmarkdown::render(tempInfografia, output_file = file,
-                        params = params,
-                        envir = new.env(parent = globalenv())
-      )
-    }
-  )
+      includeMarkdown(rmarkdown::render(
+        "./docs/infografia_ps.Rmd",
+        params = parametros)
+        )
+    })
+  })
   ### Finaliza módulo para Propiedad Social
   
   ### Inicia evento para llenar la lista de municipios según el estado seleccionado
