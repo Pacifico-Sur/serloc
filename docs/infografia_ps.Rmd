@@ -1,7 +1,8 @@
 ---
 title: "Infografía Propiedad Social"
-output: pdf_document
-date: ""
+output:
+  html_document
+date: ''
 classoption: landscape
 params:
   df_propiedad_social: NA
