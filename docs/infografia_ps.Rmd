@@ -1,5 +1,5 @@
 ---
-title: "Infografía Propiedad Social"
+title: ""
 output:
   html_document
 date: ''
@@ -8,9 +8,25 @@ params:
   df_propiedad_social: NA
   df_ps_catalogo: NA
 ---
+<style type="text/css">
+.main-container {
+  max-width: 1800px;
+  margin-left: 25px;
+  margin-right: 25px;
+}
+.row-infografia {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.column {
+  flex: 50%;
+  padding: 0 10px;
+}
+</style>
 
 ```{r setup, echo=FALSE, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(results = "asis", echo = FALSE, warning = FALSE, html)
 library(knitr)
 library(dplyr)
 library(kableExtra)
@@ -35,27 +51,29 @@ filtra_tema <- function(df_indicadores, df_catalogo, clave_tema) {
 
 style_table <- function(df_largo, titulo, color) {
   df_gt <- df_largo |>
-    gt()
-  df_gt |>
-     cols_width(
-    tema ~ px(250)
-    ) |>
+    gt() |>
+    cols_width(
+       tema ~ px(1250)
+     ) |>
     tab_style( # Color para el título de la tabla
       style = cell_fill(color = color),
       locations = cells_title()
-      ) |>
+    ) |>
     tab_style( # Pon en negritas los valores
       style = cell_text(
         size = "medium",
-        weight = "bold"),
+        weight = "bold",
+        align = "center"),
       locations = cells_body("valor")
-      ) |>
+    ) |>
     tab_header(
-      title = md(titulo)) |>
+      title = titulo) |>
     cols_label(
       tema = "",
       valor = ""
-      )
+    )
+  
+  return(df_gt)
 }
 ```
 
@@ -99,50 +117,74 @@ pob_edad_avanzada <- filtra_tema(params$df_propiedad_social, params$df_ps_catalo
 pob_inactiva <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fpe")
 ```
 
-```{r carencia_gt, echo=FALSE}
+## Infografía Propiedad Social
+
+<div class="row-infografia">
+<div class="column">
+```{r carencia_gt, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
 carencia_gt <- style_table(carencia, "CARENCIA DE BIENES Y MEDIOS DE COMUNICACIÓN", "#F4BFBF")
 carencia_gt
 ```
-
+</div>
+<div class="column">
 ```{r indigena_gt, echo=FALSE}
 indigena_gt <- style_table(indigena, "EXCLUSIÓN INDÍGENA", "#D885A3")
 indigena_gt
 ```
+</div>
+</div>
 
+<div class="row-infografia">
+<div class="column">
 ```{r rezago_gt, echo=FALSE}
 rezago_gt <- style_table(rezago, "REZAGO EDUCATIVO, CARENCIA DE AUTO E INTERNET", "#90C8AC")
 rezago_gt
 ```
-
+</div>
+<div class="column">
 ```{r piso_tierra_gt, echo=FALSE}
 piso_tierra_gt <- style_table(piso_tierra, "PRESENCIA DE PISO DE TIERRA, CARENCIA DE AGUA Y SANEAMIENTO", "#EEC373")
 piso_tierra_gt
 ```
+</div>
+</div>
 
+<div class="row-infografia">
+<div class="column">
 ```{r pob_infantil_gt, echo=FALSE}
 pob_infantil_gt <- style_table(pob_infantil,
                                "PRESENCIA DE POBLACIÓN INFANTIL Y EN EDAD DEPENDIENTE",
                                "#9DAD7F")
 pob_infantil_gt
 ```
+</div>
 
+<div class="column">
 ```{r pob_edad_avanzada_gt, echo=FALSE}
 pob_edad_avanzada_gt <- style_table(pob_edad_avanzada,
                                     "PRESENCIA DE POBLACIÓN EN EDAD AVANZADA Y POBLACIÓN CON DISCAPACIDAD",
                                     "#BFA2DB")
 pob_edad_avanzada_gt
 ```
+</div>
+</div>
 
+<div class="row-infografia">
+<div class="column">
 ```{r analfabetismo_gt, echo=FALSE}
 analfabetismo_gt <- style_table(analfabetismo,
                                     "INCIDENCIA DE ANALFABETISMO",
                                     "#99C4C8")
 analfabetismo_gt
 ```
+</div>
 
+<div class="column">
 ```{r pob_inactiva_gt, echo=FALSE}
 pob_inactiva_gt <- style_table(pob_inactiva,
                                     "PRESENCIA DE POBLACIÓN ECONÓMICAMENTE INACTIVA",
                                     "#CE97B0")
 pob_inactiva_gt
 ```
+</div>
+</div>
