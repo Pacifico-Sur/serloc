@@ -27,7 +27,7 @@ ui <- fluidPage(
 
     # Sidebar with a slider input for number of bins
     sidebarLayout(
-        sidebarPanel(# El usuario escoge qué tipo de consulta quiere hacer
+        sidebarPanel(width = 3,# El usuario escoge qué tipo de consulta quiere hacer
           div(
             selectInput(inputId = "id_tipo_consulta",
                         label = "Tipo de consulta",
@@ -146,7 +146,7 @@ ui <- fluidPage(
         ),
         
         # Muestra la tabla de datos o la infografía
-        mainPanel(
+        mainPanel(width = 9,
           tableOutput(outputId = "data_table"),
           
           # Botón para descargar los datos
