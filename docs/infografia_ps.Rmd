@@ -26,11 +26,11 @@ params:
 </style>
 
 ```{r setup, echo=FALSE, include=FALSE}
-knitr::opts_chunk$set(results = "asis", echo = FALSE, warning = FALSE, html)
+knitr::opts_chunk$set(results = "asis", echo = FALSE, warning = FALSE)
 library(knitr)
 library(dplyr)
 library(kableExtra)
-library(gt)
+library(flextable)
 ```
 
 ```{r filtra_tema, echo=FALSE, include=FALSE}
@@ -50,30 +50,20 @@ filtra_tema <- function(df_indicadores, df_catalogo, clave_tema) {
 }
 
 style_table <- function(df_largo, titulo, color) {
-  df_gt <- df_largo |>
-    gt() |>
-    cols_width(
-       tema ~ px(1250)
-     ) |>
-    tab_style( # Color para el título de la tabla
-      style = cell_fill(color = color),
-      locations = cells_title()
-    ) |>
-    tab_style( # Pon en negritas los valores
-      style = cell_text(
-        size = "medium",
-        weight = "bold",
-        align = "center"),
-      locations = cells_body("valor")
-    ) |>
-    tab_header(
-      title = titulo) |>
-    cols_label(
-      tema = "",
-      valor = ""
-    )
+  df_ft <- df_largo |>
+    flextable() |> # Crea la tabla
+    delete_part(part = "header") |> # Elimina las etiquetas de los encabezados
+    add_header_lines(values = c(titulo)) |> # Agrega el título de cada tema
+    align(align = "center", part = "header") |> # Centra el título
+    bold(part = "header") |> # Pon título en negritas
+    bold(j = 2) |> # Pon los valores en negritas
+    width(j = c(1, 2), width = c(5.0, 1.0)) |> # Ancho de columnas
+    align(align = c("justify", "center"), j = c(1, 2)) |> # Primera columna justificada, segunda columna centrada
+    fontsize(size = 10, part = "all") |>
+    bg(bg = color, part = "header") |>
+    border_remove()
   
-  return(df_gt)
+  return(df_ft)
 }
 ```
 
