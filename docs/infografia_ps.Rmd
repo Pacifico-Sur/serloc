@@ -6,6 +6,7 @@ date: ''
 params:
   nucleo_agrario: NA
   nombre_municipio: NA
+  nombre_estado: NA
   df_propiedad_social: NA
   df_ps_catalogo: NA
 ---
@@ -117,7 +118,7 @@ pob_inactiva <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "
 
 ## `r paste0(params$nucleo_agrario$nom_nucleo, " (",params$nucleo_agrario$tipo,")")`
 
-### `r paste("Municipio de", nombre_municipio, "Estado", sep = " ")`
+### `r paste0("Municipio de ", nombre_municipio, ", ", nombre_estado()$nomgeo)`
 
 <div class="row-infografia">
 <div class="column">

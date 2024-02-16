@@ -40,6 +40,15 @@ server <- function(input, output, session) {
   
   ### Inicia módulo para Propiedad Social
   ### Inicia evento para llenar la lista de municipios según el estado seleccionado
+  nombre_estado <- reactive({
+    req(input$id_ps_estado)
+    
+    estados <- ipa::db_get_estado(conn = conexion)
+    nombre_estado <- estados |>
+      filter(id_ent == input$id_ps_estado) |>
+      select(nomgeo)
+  })
+  
   municipios_df <- reactive({
     req(input$id_ps_estado)
     
@@ -144,6 +153,7 @@ server <- function(input, output, session) {
       # Set up parameters to pass to Rmd document
       parametros <- list(nucleo_agrario = nucleo_agrario,
                          nombre_municipio = nombre_municipio,
+                         nombre_estado = nombre_estado(),
                          df_propiedad_social = propiedad_social_indicadores(),
                          df_ps_catalogo = propiedad_social_catalogo())
       
