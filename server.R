@@ -145,6 +145,22 @@ server <- function(input, output, session) {
     })
   })
   
+  # Inicia botones para descarga de productos en tema de Propiedad Social
+  es_mostrar_botones_ps <- reactive({
+    (input$renderInfoPs |> isTruthy() |
+       input$id_mun |> isTruthy())
+  })
+  
+  observeEvent(es_mostrar_botones_ps(), {
+    shinyjs::hide("descargar_infografia_ps")
+    shinyjs::hide("descargar_mapa_na_contorno")
+    
+    if(es_mostrar_botones_ps()) {
+      shinyjs::show("descargar_infografia_ps")
+      shinyjs::show("descargar_mapa_na_contorno")
+    }
+  })
+  # Fin botones para descarga de productos en tema de Localidades
   ### Finaliza módulo para Propiedad Social
   
   ### Inicia evento para llenar la lista de municipios según el estado seleccionado

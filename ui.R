@@ -169,6 +169,18 @@ ui <- fluidPage(
             label = "Descargar mapa del municipio"
           ),
           
+          # Botón para descargar la infografía en PDF
+          downloadButton(
+            outputId = "descargar_infografia_ps",
+            label = "Descargar infografía"
+          ),
+          
+          # Botón para descargar el mapa del núcleo agrario y su contorno
+          downloadButton(
+            outputId = "descargar_mapa_na_contorno",
+            label = "Descargar mapa del núcleo agrario y su contorno"
+          ),
+          
           # Infografía de propiedad social
           tags$div(id="report-wrapper",
                    htmlOutput("renderedInfoPs")
