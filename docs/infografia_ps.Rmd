@@ -5,6 +5,7 @@ output:
 date: ''
 classoption: landscape
 params:
+  nucleo_agrario: NA
   df_propiedad_social: NA
   df_ps_catalogo: NA
 ---
@@ -22,6 +23,13 @@ params:
 .column {
   flex: 50%;
   padding: 0 10px;
+}
+h2 {
+  text-align: center;
+}
+h3 {
+  text-align: center;
+  padding-bottom: 50px;
 }
 </style>
 
@@ -59,7 +67,7 @@ style_table <- function(df_largo, titulo, color) {
     bold(j = 2) |> # Pon los valores en negritas
     width(j = c(1, 2), width = c(5.0, 1.0)) |> # Ancho de columnas
     align(align = c("justify", "center"), j = c(1, 2)) |> # Primera columna justificada, segunda columna centrada
-    fontsize(size = 10, part = "all") |>
+    fontsize(size = 11, part = "all") |>
     bg(bg = color, part = "header") |>
     border_remove()
   
@@ -107,7 +115,9 @@ pob_edad_avanzada <- filtra_tema(params$df_propiedad_social, params$df_ps_catalo
 pob_inactiva <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fpe")
 ```
 
-## Infografía Propiedad Social
+## `r paste0(params$nucleo_agrario$nom_nucleo, " (",params$nucleo_agrario$tipo,")")`
+
+### Municipio, Estado
 
 <div class="row-infografia">
 <div class="column">

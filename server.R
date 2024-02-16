@@ -70,7 +70,7 @@ server <- function(input, output, session) {
   ### Finaliza evento para llenar la lista de municipios según el estado seleccionado
   
   ### Inicio evento para llenar la lista de núcleos agrarios según el municipio seleccionado
-  observe({
+  nucleos_agrarios <- reactive({
     req(input$id_ps_municipio)
     
     # Extrae de la BD los municipios del estado seleccionado
@@ -82,14 +82,16 @@ server <- function(input, output, session) {
       as_tibble() |>
       select(id_na, nom_nucleo, tipo) |>
       arrange(nom_nucleo)
+    })
+  
+  observe({
+    req(nucleos_agrarios())
     
-    nucleo_agrario <- setNames(as.list(as.numeric(nucleo_agrario$id_na)),
-                               paste(nucleo_agrario$nom_nucleo, nucleo_agrario$tipo))
-    
-    # Actualiza selectInput de id_localidades
+    nucleos_agrarios_list <- setNames(as.list(as.numeric(nucleos_agrarios()$id_na)),
+                               paste(nucleos_agrarios()$nom_nucleo, nucleos_agrarios()$tipo))
     updateSelectInput(session, "id_ejido",
                       label = "Ejido o comunidad",
-                      choices = nucleo_agrario,
+                      choices = nucleos_agrarios_list,
                       selected = NULL)
   })
   ### Finaliza evento para llenar la lista de núcleos agrarios según el municipio seleccionado
@@ -128,9 +130,13 @@ server <- function(input, output, session) {
   
   observeEvent(input$renderInfoPs, {
     output$renderedInfoPs <- renderUI({
+      nucleo_agrario <- nucleos_agrarios() |>
+        filter(id_na == input$id_ejido) # Extrae el nombre del núcleo agrario seleccionado por el usuario
+      
       # Set up parameters to pass to Rmd document
-      parametros <- list(df_propiedad_social = propiedad_social_indicadores(),
-                     df_ps_catalogo = propiedad_social_catalogo())
+      parametros <- list(nucleo_agrario = nucleo_agrario,
+                         df_propiedad_social = propiedad_social_indicadores(),
+                         df_ps_catalogo = propiedad_social_catalogo())
       
       includeMarkdown(rmarkdown::render(
         "./docs/infografia_ps.Rmd",
@@ -138,6 +144,7 @@ server <- function(input, output, session) {
         )
     })
   })
+  
   ### Finaliza módulo para Propiedad Social
   
   ### Inicia evento para llenar la lista de municipios según el estado seleccionado
@@ -516,7 +523,7 @@ server <- function(input, output, session) {
   })
   ### Fin botón de visualización de datos
   
-  
+  ### Inicia botones para descarga de productos en tema de Localidades
   es_mostrar_tabla_botones <- reactive({
     (input$id_indicadores |> isTruthy() |
        input$id_variables |> isTruthy() |
@@ -535,6 +542,7 @@ server <- function(input, output, session) {
       shinyjs::show("downloadPlot")
     }
   })
+  ### Fin botones para descarga de productos en tema de Localidades
   
   observe({
     shinyjs::hide("data_table")
