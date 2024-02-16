@@ -1,11 +1,11 @@
 ---
-title: ""
+title: ''
 output:
-  html_document
+  html_document: default
 date: ''
-classoption: landscape
 params:
   nucleo_agrario: NA
+  nombre_municipio: NA
   df_propiedad_social: NA
   df_ps_catalogo: NA
 ---
@@ -117,7 +117,7 @@ pob_inactiva <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "
 
 ## `r paste0(params$nucleo_agrario$nom_nucleo, " (",params$nucleo_agrario$tipo,")")`
 
-### Municipio, Estado
+### `r paste("Municipio de", nombre_municipio, "Estado", sep = " ")`
 
 <div class="row-infografia">
 <div class="column">

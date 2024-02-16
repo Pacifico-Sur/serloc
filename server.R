@@ -40,7 +40,8 @@ server <- function(input, output, session) {
   
   ### Inicia módulo para Propiedad Social
   ### Inicia evento para llenar la lista de municipios según el estado seleccionado
-  observeEvent(input$id_ps_estado, {
+  municipios_df <- reactive({
+    req(input$id_ps_estado)
     
     # Extrae de la BD los municipios del estado seleccionado
     query_municipios <- paste("SELECT * FROM edo_mun.municipios WHERE ",
@@ -53,17 +54,21 @@ server <- function(input, output, session) {
       as_tibble() |>
       select(id_mun, nomgeo) |>
       arrange(nomgeo)
+  })
+  
+  observeEvent(municipios_df(), {
     
-    municipios <- setNames(as.list(municipios$id_mun), municipios$nomgeo)
+    municipios_list <- setNames(as.list(municipios_df()$id_mun),
+                                municipios_df()$nomgeo)
     primer_elemento <- list("Selecciona un municipio" = 0)
     
-    municipios <- primer_elemento |>
-      append(municipios)
+    municipios_list <- primer_elemento |>
+      append(municipios_list)
     
     # Can also set the label and select items
     updateSelectInput(session, "id_ps_municipio",
                       label = "Municipios",
-                      choices = municipios)
+                      choices = municipios_list)
     
   })
   ###
@@ -132,9 +137,13 @@ server <- function(input, output, session) {
     output$renderedInfoPs <- renderUI({
       nucleo_agrario <- nucleos_agrarios() |>
         filter(id_na == input$id_ejido) # Extrae el nombre del núcleo agrario seleccionado por el usuario
+      nombre_municipio <- municipios_df() |>
+        filter(id_mun == input$id_ps_municipio) |>
+        select(nomgeo)
       
       # Set up parameters to pass to Rmd document
       parametros <- list(nucleo_agrario = nucleo_agrario,
+                         nombre_municipio = nombre_municipio,
                          df_propiedad_social = propiedad_social_indicadores(),
                          df_ps_catalogo = propiedad_social_catalogo())
       
