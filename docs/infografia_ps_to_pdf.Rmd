@@ -1,0 +1,147 @@
+---
+title: ''
+output:
+  pdf_document: default
+date: ''
+classoption: landscape
+params:
+  nucleo_agrario: NA
+  nombre_municipio: NA
+  nombre_estado: NA
+  df_propiedad_social: NA
+  df_ps_catalogo: NA
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(results = "asis", echo = FALSE, warning = FALSE)
+library(knitr)
+library(dplyr)
+library(kableExtra)
+library(flextable)
+```
+
+```{r filtra_tema, echo=FALSE, include=FALSE}
+filtra_tema <- function(df_indicadores, df_catalogo, clave_tema) {
+  df_tema <- df_indicadores |>
+    select(contains(clave_tema))
+  colnames(df_tema) <- colnames(df_tema) |>
+    toupper()
+
+  catalogo_tema <- df_catalogo |>
+    dplyr::filter(cve_ind %in% colnames(df_tema))
+  
+  df_largo <- data.frame(tema = catalogo_tema$indicadores,
+                         valor = df_tema[1,] |> as.character())
+  
+  return(df_largo)
+}
+
+style_table <- function(df_largo, titulo, color) {
+  df_ft <- df_largo |>
+    flextable() |> # Crea la tabla
+    delete_part(part = "header") |> # Elimina las etiquetas de los encabezados
+    add_header_lines(values = c(titulo)) |> # Agrega el título de cada tema
+    align(align = "center", part = "header") |> # Centra el título
+    bold(part = "header") |> # Pon título en negritas
+    bold(j = 2) |> # Pon los valores en negritas
+    width(j = c(1, 2), width = c(3.0, 1.0)) |> # Ancho de columnas
+    align(align = c("justify", "center"), j = c(1, 2)) |> # Primera columna justificada, segunda columna centrada
+    fontsize(size = 11, part = "all") |>
+    bg(bg = color, part = "header") |>
+    border_remove()
+  
+  return(df_ft)
+}
+```
+
+```{r carencia, echo=FALSE}
+# Carencia de bienes y medios de comunicación
+carencia <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fcb")
+```
+
+```{r indigena, echo=FALSE}
+# Exclusión indígena
+indigena <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fpi")
+```
+
+```{r rezago, echo=FALSE}
+# Rezago educativo, carencia de auto e internet
+rezago <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fre")
+```
+
+```{r piso_tierra, echo=FALSE}
+# Presencia de piso de tierra, carencia de agua y saneamiento
+piso_tierra <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fpt")
+```
+
+```{r pob_infantil, echo=FALSE}
+# Presencia de población infantil y en edad dependiente
+pob_infantil <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fpp")
+```
+
+```{r analfabetismo, echo=FALSE}
+# Incidencia de analfabetismo
+analfabetismo <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fan")
+```
+
+```{r pob_edad_avanzada, echo=FALSE}
+# Presencia de población en edad avanzada y población con discapacidad
+pob_edad_avanzada <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fad")
+```
+
+```{r pob_inactiva, echo=FALSE}
+# Presencia de población económicamente inactiva
+pob_inactiva <- filtra_tema(params$df_propiedad_social, params$df_ps_catalogo, "fpe")
+```
+
+## `r paste0(params$nucleo_agrario$nom_nucleo, " (",params$nucleo_agrario$tipo,")")`
+
+### `r paste0("Municipio de ", params$nombre_municipio, ", ", params$nombre_estado$n$nomgeo)`
+
+```{r carencia_gt, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
+carencia_gt <- style_table(carencia, "CARENCIA DE BIENES Y MEDIOS DE COMUNICACIÓN", "#F4BFBF")
+carencia_gt
+```
+
+```{r indigena_gt, echo=FALSE}
+indigena_gt <- style_table(indigena, "EXCLUSIÓN INDÍGENA", "#D885A3")
+indigena_gt
+```
+
+```{r rezago_gt, echo=FALSE}
+rezago_gt <- style_table(rezago, "REZAGO EDUCATIVO, CARENCIA DE AUTO E INTERNET", "#90C8AC")
+rezago_gt
+```
+
+```{r piso_tierra_gt, echo=FALSE}
+piso_tierra_gt <- style_table(piso_tierra, "PRESENCIA DE PISO DE TIERRA, CARENCIA DE AGUA Y SANEAMIENTO", "#EEC373")
+piso_tierra_gt
+```
+
+```{r pob_infantil_gt, echo=FALSE}
+pob_infantil_gt <- style_table(pob_infantil,
+                               "PRESENCIA DE POBLACIÓN INFANTIL Y EN EDAD DEPENDIENTE",
+                               "#9DAD7F")
+pob_infantil_gt
+```
+
+```{r pob_edad_avanzada_gt, echo=FALSE}
+pob_edad_avanzada_gt <- style_table(pob_edad_avanzada,
+                                    "PRESENCIA DE POBLACIÓN EN EDAD AVANZADA Y POBLACIÓN CON DISCAPACIDAD",
+                                    "#BFA2DB")
+pob_edad_avanzada_gt
+```
+
+```{r analfabetismo_gt, echo=FALSE}
+analfabetismo_gt <- style_table(analfabetismo,
+                                    "INCIDENCIA DE ANALFABETISMO",
+                                    "#99C4C8")
+analfabetismo_gt
+```
+
+```{r pob_inactiva_gt, echo=FALSE}
+pob_inactiva_gt <- style_table(pob_inactiva,
+                                    "PRESENCIA DE POBLACIÓN ECONÓMICAMENTE INACTIVA",
+                                    "#CE97B0")
+pob_inactiva_gt
+```

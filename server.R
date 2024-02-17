@@ -180,6 +180,42 @@ server <- function(input, output, session) {
     }
   })
   # Fin botones para descarga de productos en tema de Localidades
+  
+  # Inicia evento para descargar la infografía de propiedad social
+  output$descargar_infografia_ps <- downloadHandler(
+    # Nombre del archivo que se va a guardar
+    filename = "infografia_propiedad_social.pdf",
+    
+    content = function(file) {
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempReport <- file.path(tempdir(), "temp_report.Rmd")
+      file.copy("./docs/infografia_ps_to_pdf.Rmd", tempReport, overwrite = TRUE)
+      
+      nucleo_agrario <- nucleos_agrarios() |>
+        filter(id_na == input$id_ejido) # Extrae el nombre del núcleo agrario seleccionado por el usuario
+      nombre_municipio <- municipios_df() |>
+        filter(id_mun == input$id_ps_municipio) |>
+        select(nomgeo)
+      
+      # Set up parameters to pass to Rmd document
+      parametros <- list(nucleo_agrario = nucleo_agrario,
+                         nombre_municipio = nombre_municipio,
+                         nombre_estado = nombre_estado(),
+                         df_propiedad_social = propiedad_social_indicadores(),
+                         df_ps_catalogo = propiedad_social_catalogo())
+      
+      # Knit the document, passing in the `params` list, and eval it in a
+      # child of the global environment (this isolates the code in the document
+      # from the code in this app).
+      rmarkdown::render(tempReport, output_file = file,
+                        params = parametros,
+                        envir = new.env(parent = globalenv())
+      )
+    }
+  )
+  # Finaliza evento para descargar la infografía de propiedad social
   ### Finaliza módulo para Propiedad Social
   
   ### Inicia evento para llenar la lista de municipios según el estado seleccionado
